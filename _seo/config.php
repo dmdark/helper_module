@@ -1,7 +1,7 @@
 <?php
 $config = array(
    'encoding' => 'utf-8', // @todo get it automaticaly
-   'using_htaccess' => 1,
+   'using_htaccess' => 0,
    /*
     Два способа подключения:
     1. using_htaccess => 1. В .htaccess прописывается код:
