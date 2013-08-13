@@ -1,0 +1,258 @@
+<?php
+require_once dirname(__FILE__) . '/functions.php';
+initConfig();
+
+// отправляем правильную кодировку
+header('Content-Type: text/html; charset=' . $GLOBALS['_seo_config']['encoding']);
+
+
+// если используем .htaccess, нужно получить контент из переданного нам урла.
+if(@$GLOBALS['_seo_config']['using_htaccess'] && !isset($_REQUEST['seo_request'])){
+   if(@!empty($GLOBALS['_seo_config']['using_entry_point'])){
+      // если сайт с единственной точкой входа, то можно её просто подключать.
+      chdir(dirname(__FILE__) . '/../');
+      $_SERVER['SCRIPT_NAME'] = str_replace('_seo/', '', $_SERVER['SCRIPT_NAME']);
+      $_SERVER['PHP_SELF'] = str_replace('_seo/', '', $_SERVER['PHP_SELF']);
+      ob_start();
+      require_once $GLOBALS['_seo_config']['using_entry_point'];
+      $GLOBALS['_seo_content'] = ob_get_clean();
+      // иногда после действий сайта конфиг нужно восстанавливать
+      if(empty($GLOBALS['_seo_config'])){
+         initConfig();
+      }
+   } else{
+      // иначе берем контент хттп запросом.
+      recoverContentFromUrl();
+   }
+}
+
+if(@$GLOBALS['_seo_config']['module_urls_enabled']){
+   // проверяем, может нам пришел старый урл, который мы должны бы заменить. Редиректим!
+   $pageInfo = getCurrentPageInfo(false);
+   if(!empty($pageInfo['newUrl'])){
+      header('HTTP/1.1 301 Moved Permanently');
+      header('Location: http://' . $_SERVER['HTTP_HOST'] . $pageInfo['newUrl']);
+      exit;
+   }
+
+   // проверяем, возможно нам пришел нами-замененный НОВЫЙ урл? Тогда нужно брать контент из старого места.
+   if(!isset($_REQUEST['seo_request'])){
+      $pageInfo = getCurrentPageInfo(true, false);
+      if(@!empty($pageInfo['url'])){
+         getFromOldPlace($pageInfo['url']);
+      }
+   }
+   // делаем ЧПУ, заменяя ссылки
+   applyUrls();
+}
+
+
+// заменяем метатэги
+if(@$GLOBALS['_seo_config']['module_meta_enabled']){
+   applyMeta();
+}
+
+// ищем первый h1
+if(@$GLOBALS['_seo_config']['module_headers_enabled']){
+   applyHeaders();
+}
+
+// вызываем пользовательскую функцию для страницы и меняем контент как хотим
+if(@$GLOBALS['_seo_config']['module_query']['enabled']){
+   $commonFunctions = @$GLOBALS['_seo_config']['module_query']['common_functions'];
+   $userFunction = @$GLOBALS['_seo_config']['module_query']['functions'][getCurrentUrl()];
+   if(!empty($commonFunctions) || !empty($userFunction)){
+      $doc = '';
+      $library = @$GLOBALS['_seo_config']['module_query']['use_library'];
+      if($library == 'phpQuery'){
+         require_once dirname(__FILE__) . '/phpQuery-onefile.php';
+         $doc = phpQuery::newDocumentHTML($GLOBALS['_seo_content']);
+      } elseif($library == 'PQLite'){
+         require_once dirname(__FILE__) . '/PQLite/PQLite.php';
+         $doc = new PQLite($GLOBALS['_seo_content']);
+
+      }
+
+      // common functions
+      if(!empty($commonFunctions)) foreach($commonFunctions as $commonFunction){
+         call_user_func($commonFunction, $doc, getCurrentPageInfo());
+      }
+
+      // specific page function
+      if(!empty($userFunction)){
+         call_user_func($userFunction, $doc, getCurrentPageInfo());
+      }
+
+      if($library == 'phpQuery'){
+         $GLOBALS['_seo_content'] = $doc->htmlOuter();
+      } elseif($library == 'PQLite'){
+         $GLOBALS['_seo_content'] = $doc->getHTML();
+      }
+   }
+}
+
+echo $GLOBALS['_seo_content'];
+
+
+// =============== FUNCTIONS ==================
+function getFromOldPlace($oldUrl)
+{
+   if(strpos($oldUrl, '/') !== 0){
+      $oldUrl = '/' . $oldUrl;
+   }
+   $oldUrl = 'http://' . $_SERVER['HTTP_HOST'] . $oldUrl;
+   if(strpos($oldUrl, '?') !== false){
+      $oldUrl .= '&seo_request=1';
+   } else{
+      $oldUrl .= '?seo_request=1';
+   }
+   $GLOBALS['_seo_content'] = file_get_contents($oldUrl);
+}
+
+function recoverContentFromUrl()
+{
+   $q = getCurrentUrl();
+
+   $url = 'http://' . $_SERVER['HTTP_HOST'] . $q;
+   if(strpos($url, '?') !== false){
+      $url .= '&seo_request=1';
+   } else{
+      $url .= '?seo_request=1';
+   }
+   if(strpos($q, '_seo/') !== false){
+      die('something goes wrong. Please turn off seo module.');
+   }
+
+   if(!empty($_POST) && $curl = curl_init()){
+      $post = http_build_query(array_merge(array('seo_request' => 1), $_POST));
+      $cc = new cURL();
+      $GLOBALS['_seo_content'] = $cc->post($url, $post);
+   } else{
+      $cc = new cURL();
+      $GLOBALS['_seo_content'] = $cc->get($url);
+   }
+
+
+   /*if(function_exists("stream_context_create") && !empty($_POST)){
+      $post = http_build_query(array_merge(array('seo_request' => 1), $_POST));
+      $options = array(
+         'http' => array(
+            'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
+            "User-agent:Opera 10.00\r\nContent-length:" . strlen($post) . "\r\nConnection:close",
+            'method' => 'POST',
+            'content' => $post,
+            'max_redirects' => 4,
+            'follow_location' => true,
+         ),
+      );
+      _seoLog('=== Запрос с опциями ' . print_r($options, true) . "\n");
+      $context = stream_context_create($options);
+      $GLOBALS['_seo_content'] = file_get_contents($url, false, $context);
+   } else{
+      $GLOBALS['_seo_content'] = file_get_contents($url);
+   }*/
+   return;
+}
+
+function getCurrentUrl()
+{
+   if($GLOBALS['_seo_config']['using_htaccess']){
+      $q = trim($_GET['_seo']);
+      if(!empty($q)){
+         if(strpos($q, '/') !== 0){
+            $q = '/' . $q;
+         }
+         return html_entity_decode($q);
+      }
+   }
+   return html_entity_decode($_SERVER['REQUEST_URI']);
+}
+
+function getCurrentPageInfo($searchNewPage = true, $searchOldPage = true)
+{
+   $currentUrl = getCurrentUrl();
+
+   if($searchOldPage){
+      $pageInfo = @$GLOBALS['_seo_config']['pages'][$currentUrl];
+      if(!empty($pageInfo)) return $pageInfo;
+   }
+   if($searchNewPage){
+      foreach($GLOBALS['_seo_config']['pages'] as $pageInfo){
+         if(@$pageInfo['newUrl'] == $currentUrl){
+            return $pageInfo;
+         }
+      }
+   }
+}
+
+function applyMeta()
+{
+   try{
+      $pageInfo = getCurrentPageInfo();
+
+      if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
+         $headStart = mb_strpos($GLOBALS['_seo_content'], '<head>');
+         $headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
+         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart + 6, $headEnd - $headStart - 6);
+         if(!empty($pageInfo['title'])){
+            $headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
+         }
+         if(!empty($pageInfo['description'])){
+            if(preg_match('/<meta[^>]+name="description"[^>]+content="[^>]+"/simx', $headHtml)){
+               $headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="[^>]+"/simx', '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
+            } else{
+               $headHtml .= '<meta name="description" content="' . $pageInfo['description'] . '" />' . "\n";
+            }
+         }
+         if(!empty($pageInfo['keywords'])){
+            if(preg_match('/<meta[^>]+name="keywords"[^>]+content="[^>]+"/simx', $headHtml)){
+               $headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="[^>]+"/simx', '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
+            } else{
+               $headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
+            }
+         }
+         $GLOBALS['_seo_content'] = preg_replace('%<head>(.+?)</head>%suimx', '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
+
+      }
+   } catch (Exception $e){
+      echo '<!-- Seo module error: ' . $e->getTrace() . '-->';
+   }
+}
+
+function applyHeaders()
+{
+   try{
+      $pageInfo = getCurrentPageInfo();
+      if(!empty($pageInfo['h1']) && function_exists('mb_strpos')){
+         $h1Start = mb_strpos($GLOBALS['_seo_content'], '<h1');
+         $h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>');
+         $h1Html = mb_substr($GLOBALS['_seo_content'], $h1Start, $h1End - $h1Start + mb_strlen('</h1>'));
+         $h1StartTagEnd = mb_strpos($h1Html, '>');
+         $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End);
+      }
+
+   } catch (Exception $e){
+      echo '<!-- Seo module error: ' . $e->getTrace() . '-->';
+   }
+}
+
+function applyUrls()
+{
+   foreach($GLOBALS['_seo_config']['pages'] as $oldUrl => $pageInfo){
+      if(!empty($pageInfo['newUrl'])){
+         $oldUrlStr = '(' . preg_quote(htmlspecialchars(str_replace('%2F', '/', rawurlencode($oldUrl)))) . ')|(' . preg_quote(htmlspecialchars($oldUrl)) . ')';
+         $GLOBALS['_seo_content'] = preg_replace('!(<a[^<>]+?href=("|\'))(http://)?(' . preg_quote($_SERVER['HTTP_HOST']) . ')?' . $oldUrlStr . '(("|\')([^<>]+?)?>.+?</a>)!simx',
+               '$1' . $pageInfo['newUrl'] . '$7', $GLOBALS['_seo_content']);
+      }
+   }
+
+}
+
+function initConfig()
+{
+   $GLOBALS['_seo_config'] = include dirname(__FILE__) . '/config.php';
+
+   $data = config2file(dirname(__FILE__) . '/config.ini');
+   $GLOBALS['_seo_config']['pages'] = $data;
+
+}

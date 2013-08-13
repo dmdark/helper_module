@@ -1,0 +1,45 @@
+.row-item {
+   margin-top: 0px;
+}
+
+.row-first-true {
+   margin-top: 30px;
+}
+
+.save_button {
+   bottom: 10px;
+   left: 10px;
+   position: fixed;
+   z-index: 10;
+}
+
+.panel {
+   background-color: #E3F9F9;
+}
+
+.auth_container {
+   margin: 10px;
+   width: 237px;
+}
+
+.nav-side {
+   background-color: #F2F8BD;
+   border-radius: 0 5px 5px 0;
+   font-size: 11px;
+   opacity: 0.5;
+   position: fixed;
+   width: 100px;
+
+}
+
+.nav-side li {
+   line-height: 0.9em;
+}
+
+.nav-side li a {
+   cursor: pointer;
+}
+
+.nav-side li a:hover {
+   background-color: #F2F8BD;
+}
