@@ -1,14 +1,16 @@
 <?php
 session_start();
-if(@!empty($_POST) && $_POST['login'] == 'matik' && $_POST['password'] == 'iwanttoenter'){
+define('_SEO_DIRECTORY', dirname(__FILE__) . '/../');
+require_once _SEO_DIRECTORY . 'functions.php';
+$config = require_once _SEO_DIRECTORY . 'config.php';
+
+if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5($_POST['password']) == $config['adminConfig']['password']){
    $_SESSION['_seo_auth'] = 1;
    header('Location: /_seo/admin/');
    return;
 }
 
-define('_SEO_DIRECTORY', dirname(__FILE__) . '/../');
-require_once _SEO_DIRECTORY . 'functions.php';
-$config = require_once _SEO_DIRECTORY . 'config.php';
+
 ?>
 <!DOCTYPE html>
 <html lang="en" ng-app>
