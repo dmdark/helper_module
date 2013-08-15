@@ -35,12 +35,17 @@ $config = array(
      # -==== SEO MODULE END ===-
 
    2. using_htaccess => 0
-      Перехватывается буфер (например в index.php в самом верху), прописывается ob_start();
-      После всего вывода (например в конце index.php) прописывается
-      $GLOBALS['_seo_content'] = ob_get_clean();
-      require_once dirname(__FILE__) . '/_seo/index.php';
+         Перехватывается буфер (например в index.php в самом верху), прописывается
+         require_once dirname(__FILE__) . '/_seo/index.php';
+         ob_start();
 
-    */
+         После всего вывода (например в конце index.php - НО ДО вызова функции exit() если такая есть) прописывается
+
+         $GLOBALS['_seo_content'] = ob_get_clean();
+         _seo_apply();
+         echo $GLOBALS['_seo_content'];
+
+       */
    'using_entry_point' => null, // для сайтов где всё идет через 1 точку, можно вызывать её напрямую. Иначе удалить.
 
    'module_meta_enabled' => 1,

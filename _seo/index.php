@@ -35,6 +35,13 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       exit;
    }
 
+   $pageInfo = getCurrentPageInfo(true, false);
+   if(!empty($pageInfo['newUrl'])){
+      header('HTTP/1.1 200 Ok');
+      $_SERVER['REQUEST_URI'] = $pageInfo['url'];
+      $_GET = getGETparamsFromUrl($pageInfo['url']);
+   }
+
    // проверяем, возможно нам пришел нами-замененный НОВЫЙ урл? Тогда нужно брать контент из старого места.
    if(!isset($_REQUEST['seo_request'])){
       $pageInfo = getCurrentPageInfo(true, false);
@@ -42,56 +49,63 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
          getFromOldPlace($pageInfo['url']);
       }
    }
-   // делаем ЧПУ, заменяя ссылки
-   applyUrls();
+
 }
 
 
-// заменяем метатэги
-if(@$GLOBALS['_seo_config']['module_meta_enabled']){
-   applyMeta();
-}
+function _seo_apply()
+{
+   if(@$GLOBALS['_seo_config']['module_urls_enabled']){
+      // делаем ЧПУ, заменяя ссылки
+      applyUrls();
+   }
 
-// ищем первый h1
-if(@$GLOBALS['_seo_config']['module_headers_enabled']){
-   applyHeaders();
-}
+   // заменяем метатэги
+   if(@$GLOBALS['_seo_config']['module_meta_enabled'] && !empty($GLOBALS['_seo_content'])){
+      applyMeta();
+   }
 
-// вызываем пользовательскую функцию для страницы и меняем контент как хотим
-if(@$GLOBALS['_seo_config']['module_query']['enabled']){
-   $commonFunctions = @$GLOBALS['_seo_config']['module_query']['common_functions'];
-   $userFunction = @$GLOBALS['_seo_config']['module_query']['functions'][getCurrentUrl()];
-   if(!empty($commonFunctions) || !empty($userFunction)){
-      $doc = '';
-      $library = @$GLOBALS['_seo_config']['module_query']['use_library'];
-      if($library == 'phpQuery'){
-         require_once dirname(__FILE__) . '/phpQuery-onefile.php';
-         $doc = phpQuery::newDocumentHTML($GLOBALS['_seo_content']);
-      } elseif($library == 'PQLite'){
-         require_once dirname(__FILE__) . '/PQLite/PQLite.php';
-         $doc = new PQLite($GLOBALS['_seo_content']);
+   // вызываем пользовательскую функцию для страницы и меняем контент как хотим
+   if(@$GLOBALS['_seo_config']['module_query']['enabled'] && !empty($GLOBALS['_seo_content'])){
+      $commonFunctions = @$GLOBALS['_seo_config']['module_query']['common_functions'];
+      $userFunction = @$GLOBALS['_seo_config']['module_query']['functions'][getCurrentUrl()];
+      if(!empty($commonFunctions) || !empty($userFunction)){
+         $doc = '';
+         $library = @$GLOBALS['_seo_config']['module_query']['use_library'];
+         if($library == 'phpQuery'){
+            require_once dirname(__FILE__) . '/phpQuery-onefile.php';
+            $doc = phpQuery::newDocumentHTML($GLOBALS['_seo_content']);
+         } elseif($library == 'PQLite'){
+            require_once dirname(__FILE__) . '/PQLite/PQLite.php';
+            $doc = new PQLite($GLOBALS['_seo_content']);
 
+         }
+
+         // common functions
+         if(!empty($commonFunctions)) foreach($commonFunctions as $commonFunction){
+            call_user_func($commonFunction, $doc, getCurrentPageInfo());
+         }
+
+         // specific page function
+         if(!empty($userFunction)){
+            call_user_func($userFunction, $doc, getCurrentPageInfo());
+         }
+
+         if($library == 'phpQuery'){
+            $GLOBALS['_seo_content'] = $doc->htmlOuter();
+         } elseif($library == 'PQLite'){
+            $GLOBALS['_seo_content'] = $doc->getHTML();
+         }
       }
 
-      // common functions
-      if(!empty($commonFunctions)) foreach($commonFunctions as $commonFunction){
-         call_user_func($commonFunction, $doc, getCurrentPageInfo());
-      }
 
-      // specific page function
-      if(!empty($userFunction)){
-         call_user_func($userFunction, $doc, getCurrentPageInfo());
-      }
+   }
 
-      if($library == 'phpQuery'){
-         $GLOBALS['_seo_content'] = $doc->htmlOuter();
-      } elseif($library == 'PQLite'){
-         $GLOBALS['_seo_content'] = $doc->getHTML();
-      }
+   // ищем первый h1
+   if(@$GLOBALS['_seo_config']['module_headers_enabled']){
+      applyHeaders();
    }
 }
-
-echo $GLOBALS['_seo_content'];
 
 
 // =============== FUNCTIONS ==================
@@ -255,4 +269,20 @@ function initConfig()
    $data = config2file(dirname(__FILE__) . '/config.ini');
    $GLOBALS['_seo_config']['pages'] = $data;
 
+}
+
+function getGETparamsFromUrl($url)
+{
+   $get = array();
+   if(preg_match('/\?(.+)/simx', $url, $regs)){
+      $getStr = $regs[1];
+      if(!empty($getStr)){
+         $getArray = explode('&', $getStr);
+         foreach($getArray as $getItemStr){
+            list($name, $val) = explode('=', $getItemStr);
+            $get[$name] = $val;
+         }
+      }
+   }
+   return $get;
 }

@@ -23,13 +23,16 @@
 }
 
 .nav-side {
-   background-color: #F2F8BD;
-   border-radius: 0 5px 5px 0;
+   background-color: #EBEBEB;
+   border-radius: 6px 5px 5px 6px;
    font-size: 11px;
    opacity: 0.5;
    position: fixed;
-   width: 100px;
-
+   right: 0;
+   top: 12px;
+   width: 277px;
+   z-index: 10;
+   display: none;
 }
 
 .nav-side li {
@@ -38,6 +41,7 @@
 
 .nav-side li a {
    cursor: pointer;
+   padding: 5px 15px;
 }
 
 .nav-side li a:hover {
