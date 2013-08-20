@@ -86,11 +86,11 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
                <button class="btn btn-danger pull-right" ng-click="Remove(item)">удалить</button>
             </div>
             <div class="input-group">
-               <span class="input-group-addon">http://domuniversal.ru</span>
+               <span class="input-group-addon">http://<?php echo $_SERVER['HTTP_HOST']; ?></span>
                <input type="text" class="form-control" placeholder="Текущий URL" ng-model="item.url">
             </div>
             <div class="input-group" style="margin-top: 7px;">
-               <span class="input-group-addon">http://domuniversal.ru</span>
+               <span class="input-group-addon">http://<?php echo $_SERVER['HTTP_HOST']; ?></span>
                <input type="text" class="form-control" placeholder="Новый URL" ng-model="item.newUrl">
             </div>
             <div class="input-group" style="margin-top: 7px;">

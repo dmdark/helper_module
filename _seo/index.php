@@ -203,29 +203,30 @@ function applyMeta()
 {
    try{
       $pageInfo = getCurrentPageInfo();
-
       if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
-         $headStart = mb_strpos($GLOBALS['_seo_content'], '<head>');
+         $headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
          $headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
-         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart + 6, $headEnd - $headStart - 6);
+         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart);
+         $closeHeader = mb_strpos($headHtml, '>');
+         $headHtml = mb_substr($headHtml, $closeHeader + 1);
          if(!empty($pageInfo['title'])){
             $headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
          }
          if(!empty($pageInfo['description'])){
-            if(preg_match('/<meta[^>]+name="description"[^>]+content="[^>]+"/simx', $headHtml)){
-               $headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="[^>]+"/simx', '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
+            if(preg_match('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx', $headHtml)){
+               $headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx', '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
             } else{
                $headHtml .= '<meta name="description" content="' . $pageInfo['description'] . '" />' . "\n";
             }
          }
          if(!empty($pageInfo['keywords'])){
-            if(preg_match('/<meta[^>]+name="keywords"[^>]+content="[^>]+"/simx', $headHtml)){
-               $headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="[^>]+"/simx', '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
+            if(preg_match('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx', $headHtml)){
+               $headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx', '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
             } else{
                $headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
             }
          }
-         $GLOBALS['_seo_content'] = preg_replace('%<head>(.+?)</head>%suimx', '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
+         $GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%suimx', '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
 
       }
    } catch (Exception $e){
