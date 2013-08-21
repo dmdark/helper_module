@@ -5,27 +5,6 @@ initConfig();
 // отправляем правильную кодировку
 header('Content-Type: text/html; charset=' . $GLOBALS['_seo_config']['encoding']);
 
-
-// если используем .htaccess, нужно получить контент из переданного нам урла.
-if(@$GLOBALS['_seo_config']['using_htaccess'] && !isset($_REQUEST['seo_request'])){
-   if(@!empty($GLOBALS['_seo_config']['using_entry_point'])){
-      // если сайт с единственной точкой входа, то можно её просто подключать.
-      chdir(dirname(__FILE__) . '/../');
-      $_SERVER['SCRIPT_NAME'] = str_replace('_seo/', '', $_SERVER['SCRIPT_NAME']);
-      $_SERVER['PHP_SELF'] = str_replace('_seo/', '', $_SERVER['PHP_SELF']);
-      ob_start();
-      require_once $GLOBALS['_seo_config']['using_entry_point'];
-      $GLOBALS['_seo_content'] = ob_get_clean();
-      // иногда после действий сайта конфиг нужно восстанавливать
-      if(empty($GLOBALS['_seo_config'])){
-         initConfig();
-      }
-   } else{
-      // иначе берем контент хттп запросом.
-      recoverContentFromUrl();
-   }
-}
-
 if(@$GLOBALS['_seo_config']['module_urls_enabled']){
    // проверяем, может нам пришел старый урл, который мы должны бы заменить. Редиректим!
    $pageInfo = getCurrentPageInfo(false);
@@ -42,14 +21,6 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       $_GET = getGETparamsFromUrl($pageInfo['url']);
    }
 
-   // проверяем, возможно нам пришел нами-замененный НОВЫЙ урл? Тогда нужно брать контент из старого места.
-   if(!isset($_REQUEST['seo_request'])){
-      $pageInfo = getCurrentPageInfo(true, false);
-      if(@!empty($pageInfo['url'])){
-         getFromOldPlace($pageInfo['url']);
-      }
-   }
-
 }
 
 
@@ -62,6 +33,7 @@ function _seo_apply()
 
    // заменяем метатэги
    if(@$GLOBALS['_seo_config']['module_meta_enabled'] && !empty($GLOBALS['_seo_content'])){
+
       applyMeta();
    }
 
@@ -109,76 +81,9 @@ function _seo_apply()
 
 
 // =============== FUNCTIONS ==================
-function getFromOldPlace($oldUrl)
-{
-   if(strpos($oldUrl, '/') !== 0){
-      $oldUrl = '/' . $oldUrl;
-   }
-   $oldUrl = 'http://' . $_SERVER['HTTP_HOST'] . $oldUrl;
-   if(strpos($oldUrl, '?') !== false){
-      $oldUrl .= '&seo_request=1';
-   } else{
-      $oldUrl .= '?seo_request=1';
-   }
-   $GLOBALS['_seo_content'] = file_get_contents($oldUrl);
-}
-
-function recoverContentFromUrl()
-{
-   $q = getCurrentUrl();
-
-   $url = 'http://' . $_SERVER['HTTP_HOST'] . $q;
-   if(strpos($url, '?') !== false){
-      $url .= '&seo_request=1';
-   } else{
-      $url .= '?seo_request=1';
-   }
-   if(strpos($q, '_seo/') !== false){
-      die('something goes wrong. Please turn off seo module.');
-   }
-
-   if(!empty($_POST) && $curl = curl_init()){
-      $post = http_build_query(array_merge(array('seo_request' => 1), $_POST));
-      $cc = new cURL();
-      $GLOBALS['_seo_content'] = $cc->post($url, $post);
-   } else{
-      $cc = new cURL();
-      $GLOBALS['_seo_content'] = $cc->get($url);
-   }
-
-
-   /*if(function_exists("stream_context_create") && !empty($_POST)){
-      $post = http_build_query(array_merge(array('seo_request' => 1), $_POST));
-      $options = array(
-         'http' => array(
-            'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
-            "User-agent:Opera 10.00\r\nContent-length:" . strlen($post) . "\r\nConnection:close",
-            'method' => 'POST',
-            'content' => $post,
-            'max_redirects' => 4,
-            'follow_location' => true,
-         ),
-      );
-      _seoLog('=== Запрос с опциями ' . print_r($options, true) . "\n");
-      $context = stream_context_create($options);
-      $GLOBALS['_seo_content'] = file_get_contents($url, false, $context);
-   } else{
-      $GLOBALS['_seo_content'] = file_get_contents($url);
-   }*/
-   return;
-}
 
 function getCurrentUrl()
 {
-   if($GLOBALS['_seo_config']['using_htaccess']){
-      $q = trim($_GET['_seo']);
-      if(!empty($q)){
-         if(strpos($q, '/') !== 0){
-            $q = '/' . $q;
-         }
-         return html_entity_decode($q);
-      }
-   }
    return html_entity_decode($_SERVER['REQUEST_URI']);
 }
 
@@ -203,31 +108,39 @@ function applyMeta()
 {
    try{
       $pageInfo = getCurrentPageInfo();
+      // $GLOBALS['_seo_content'] .= '<pre>'.getCurrentUrl().print_r($pageInfo, true);
+
+      $add_regexp = '';
+      if($GLOBALS['_seo_config']['encoding'] == 'utf-8'){
+         $add_regexp = 'u';
+      }
+
       if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
          $headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
          $headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
          $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart);
          $closeHeader = mb_strpos($headHtml, '>');
          $headHtml = mb_substr($headHtml, $closeHeader + 1);
+
          if(!empty($pageInfo['title'])){
             $headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
          }
          if(!empty($pageInfo['description'])){
             if(preg_match('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx', $headHtml)){
-               $headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx', '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
+               $headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
             } else{
                $headHtml .= '<meta name="description" content="' . $pageInfo['description'] . '" />' . "\n";
             }
          }
          if(!empty($pageInfo['keywords'])){
             if(preg_match('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx', $headHtml)){
-               $headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx', '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
+               $headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
             } else{
                $headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
             }
          }
-         $GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%suimx', '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
 
+         $GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%simx' . $add_regexp, '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
       }
    } catch (Exception $e){
       echo '<!-- Seo module error: ' . $e->getTrace() . '-->';

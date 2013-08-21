@@ -1,65 +1,19 @@
 <?php
 $config = array(
-   'encoding' => 'utf-8', // @todo get it automaticaly
-   'using_htaccess' => 0,
-   /*
-    Два способа подключения:
-    1. using_htaccess => 1. В .htaccess прописывается код:
-
-    # -==== SEO MODULE ===-
-     # если обращения напрямую на index.php
-     RewriteCond %{REQUEST_URI} !^/admin
-     RewriteCond %{REQUEST_METHOD} !=POST
-     RewriteCond %{REQUEST_URI} !.*\.(ico|gif|jpg|jpeg|png|js|css)
-     RewriteCond %{REQUEST_FILENAME} -f
-     RewriteCond %{REQUEST_FILENAME} index\.php$
-     RewriteCond %{QUERY_STRING} !seo_request=1
-     RewriteRule $ _seo/index.php?_seo=$1 [QSA,L]
-
-     # перехват всего
-     RewriteCond %{REQUEST_URI} !^/admin
-     RewriteCond %{REQUEST_METHOD} !=POST
-     RewriteCond %{REQUEST_URI} !.*\.(ico|gif|jpg|jpeg|png|js|css)
-     RewriteCond %{REQUEST_FILENAME} !-f
-     RewriteCond %{REQUEST_FILENAME} !-d
-     RewriteCond %{QUERY_STRING} !seo_request=1
-     RewriteRule ^(.*)$ /_seo/index.php?_seo=$1 [QSA,L]
-
-     # перехват главной страницы
-     RewriteCond %{REQUEST_URI} !^/admin
-     RewriteCond %{REQUEST_METHOD} !=POST
-     RewriteCond %{REQUEST_URI} !.*\.(ico|gif|jpg|jpeg|png|js|css)
-     RewriteCond %{REQUEST_URI} "^/$"
-     RewriteCond %{QUERY_STRING} !seo_request=1
-     RewriteRule ^(.*) /_seo/index.php?_seo=$1 [QSA,L]
-     # -==== SEO MODULE END ===-
-
-   2. using_htaccess => 0
-         Перехватывается буфер (например в index.php в самом верху), прописывается
-         require_once dirname(__FILE__) . '/_seo/index.php';
-         ob_start();
-
-         После всего вывода (например в конце index.php - НО ДО вызова функции exit() если такая есть) прописывается
-
-         $GLOBALS['_seo_content'] = ob_get_clean();
-         _seo_apply();
-         echo $GLOBALS['_seo_content'];
-
-       */
-   'using_entry_point' => null, // для сайтов где всё идет через 1 точку, можно вызывать её напрямую. Иначе удалить.
+   'encoding' => 'utf-8',
 
    'module_meta_enabled' => 1,
    'module_urls_enabled' => 1,
    'module_headers_enabled' => 1,
    'module_query' => array(
-      'enabled' => 1,
-      'use_library' => null, //'PQLite', // PQLite, phpQuery, null
+      'enabled' => 0,
+      'use_library' => null, //'PQLite',  'phpQuery', null
       'common_functions' => array(
          '_setH1'
       ),
       'functions' => array(
          '/' => 'function_main',
-         /*'/contacts/ => function_contacts,*/
+         '/contacts/' => 'function_contacts',
       )
    ),
    'adminConfig' => array(
