@@ -44,8 +44,8 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
          <a class="navbar-brand" href="/_seo/admin/">Matik SEO admin</a>
 
          <ul class="nav navbar-nav">
-            <li class="active"><a href="/">Страницы сайта</a></li>
-            <li><a href="#">Правила .htaccess</a></li>
+            <li class="active"><a href="/_seo/admin/">Редактирование</a></li>
+            <li><a href="/" target="_blank">Перейти на сайт!</a></li>
          </ul>
 
       </div>
@@ -80,7 +80,7 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
       <div class="row row-item row-first-{{ $first }}" ng-class="" ng-repeat="item in items">
          <div class="panel">
             <div class="panel-heading">
-               <a name="{{ item.url }}" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{ item.url }}">
+               {{ $index + 1 }}. <a target="_blank" name="{{ item.url }}" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{ item.url }}">
                   http://<?php echo $_SERVER['HTTP_HOST']; ?><span>{{ item.url }}</span>
                </a>
                <button class="btn btn-danger pull-right" ng-click="Remove(item)">удалить</button>
