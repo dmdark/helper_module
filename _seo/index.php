@@ -20,15 +20,6 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       $_SERVER['REQUEST_URI'] = $pageInfo['url'];
       $_GET = getGETparamsFromUrl($pageInfo['url']);
    }
-
-   // проверяем, возможно нам пришел нами-замененный НОВЫЙ урл? Тогда нужно брать контент из старого места.
-   if(!isset($_REQUEST['seo_request'])){
-      $pageInfo = getCurrentPageInfo(true, false);
-      if(@!empty($pageInfo['url'])){
-         getFromOldPlace($pageInfo['url']);
-      }
-   }
-
 }
 
 
@@ -89,68 +80,13 @@ function _seo_apply()
 
 
 // =============== FUNCTIONS ==================
-function getFromOldPlace($oldUrl)
-{
-   if(strpos($oldUrl, '/') !== 0){
-      $oldUrl = '/' . $oldUrl;
-   }
-   $oldUrl = 'http://' . $_SERVER['HTTP_HOST'] . $oldUrl;
-   if(strpos($oldUrl, '?') !== false){
-      $oldUrl .= '&seo_request=1';
-   } else{
-      $oldUrl .= '?seo_request=1';
-   }
-   $GLOBALS['_seo_content'] = file_get_contents($oldUrl);
-}
-
-function recoverContentFromUrl()
-{
-   $q = getCurrentUrl();
-
-   $url = 'http://' . $_SERVER['HTTP_HOST'] . $q;
-   if(strpos($url, '?') !== false){
-      $url .= '&seo_request=1';
-   } else{
-      $url .= '?seo_request=1';
-   }
-   if(strpos($q, '_seo/') !== false){
-      die('something goes wrong. Please turn off seo module.');
-   }
-
-   if(!empty($_POST) && $curl = curl_init()){
-      $post = http_build_query(array_merge(array('seo_request' => 1), $_POST));
-      $cc = new cURL();
-      $GLOBALS['_seo_content'] = $cc->post($url, $post);
-   } else{
-      $cc = new cURL();
-      $GLOBALS['_seo_content'] = $cc->get($url);
-   }
-
-
-   /*if(function_exists("stream_context_create") && !empty($_POST)){
-      $post = http_build_query(array_merge(array('seo_request' => 1), $_POST));
-      $options = array(
-         'http' => array(
-            'header' => "Content-type: application/x-www-form-urlencoded\r\n" .
-            "User-agent:Opera 10.00\r\nContent-length:" . strlen($post) . "\r\nConnection:close",
-            'method' => 'POST',
-            'content' => $post,
-            'max_redirects' => 4,
-            'follow_location' => true,
-         ),
-      );
-      _seoLog('=== Запрос с опциями ' . print_r($options, true) . "\n");
-      $context = stream_context_create($options);
-      $GLOBALS['_seo_content'] = file_get_contents($url, false, $context);
-   } else{
-      $GLOBALS['_seo_content'] = file_get_contents($url);
-   }*/
-   return;
-}
 
 function getCurrentUrl()
 {
-   return html_entity_decode($_SERVER['REQUEST_URI']);
+   if(!defined('_seo_request_uri')){
+      define('_seo_request_uri', html_entity_decode($_SERVER['REQUEST_URI']));
+   }
+   return _seo_request_uri;
 }
 
 function getCurrentPageInfo($searchNewPage = true, $searchOldPage = true)
@@ -184,7 +120,7 @@ function applyMeta()
       if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
          $headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
          $headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
-         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart);
+         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart - 5);
          $closeHeader = mb_strpos($headHtml, '>');
          $headHtml = mb_substr($headHtml, $closeHeader + 1);
 

@@ -1,7 +1,8 @@
 <?php
-
+header('Content-Type: text/html; charset=utf-8');
 define('_SEO_DIRECTORY', dirname(__FILE__) . '/../');
 require_once _SEO_DIRECTORY . 'functions.php';
+$GLOBALS['_seo_config'] = include dirname(__FILE__) . '/../config.php';
 
 if(@$_GET['action'] == 'get_items'){
    $config = config2file(_SEO_DIRECTORY . 'config.ini');
