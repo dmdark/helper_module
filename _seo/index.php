@@ -25,6 +25,10 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
 
 function _seo_apply()
 {
+   if(@$GLOBALS['_seo_config']['encoding'] == 'utf-8'){
+      deleteNonUtfSymbols();
+   }
+
    if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       // делаем ЧПУ, заменяя ссылки
       applyUrls();
@@ -116,7 +120,6 @@ function applyMeta()
       if($GLOBALS['_seo_config']['encoding'] == 'utf-8'){
          $add_regexp = 'u';
       }
-
       if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
          $headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
          $headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
@@ -205,4 +208,18 @@ function getGETparamsFromUrl($url)
       }
    }
    return $get;
+}
+
+function deleteNonUtfSymbols()
+{
+   $GLOBALS['_seo_content'] = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]' .
+      '|[\x00-\x7F][\x80-\xBF]+' .
+      '|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*' .
+      '|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})' .
+      '|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
+      '?', $GLOBALS['_seo_content']);
+
+   $GLOBALS['_seo_content'] = preg_replace('/\xE0[\x80-\x9F][\x80-\xBF]' .
+   '|\xED[\xA0-\xBF][\x80-\xBF]/S', '?', $GLOBALS['_seo_content']);
+
 }
