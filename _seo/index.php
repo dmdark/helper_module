@@ -22,6 +22,12 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
    }
 }
 
+function _seo_ob_callback($buffer)
+{
+   $GLOBALS['_seo_content'] = $buffer;
+   _seo_apply();
+   return $GLOBALS['_seo_content'];
+}
 
 function _seo_apply()
 {
@@ -36,7 +42,6 @@ function _seo_apply()
 
    // заменяем метатэги
    if(@$GLOBALS['_seo_config']['module_meta_enabled'] && !empty($GLOBALS['_seo_content'])){
-
       applyMeta();
    }
 
@@ -123,7 +128,7 @@ function applyMeta()
       if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
          $headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
          $headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
-         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart - 5);
+         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart);
          $closeHeader = mb_strpos($headHtml, '>');
          $headHtml = mb_substr($headHtml, $closeHeader + 1);
 
@@ -144,7 +149,7 @@ function applyMeta()
                $headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
             }
          }
-
+         /*$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader) . $headHtml . (mb_substr($GLOBALS['_seo_content'], $headEnd + 7));*/
          $GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%simx' . $add_regexp, '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
       }
    } catch (Exception $e){
