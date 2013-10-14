@@ -31,6 +31,8 @@ function _seo_ob_callback($buffer)
 
 function _seo_apply()
 {
+   initConfig();
+
    if(@$GLOBALS['_seo_config']['encoding'] == 'utf-8'){
       deleteNonUtfSymbols();
    }
