@@ -37,7 +37,7 @@ function php2js($a = false)
    }
 }
 
-function config2file($file)
+function config2file($file, $needConvert = true)
 {
    $result = array();
 
@@ -55,7 +55,7 @@ function config2file($file)
       if(preg_match('/^=/simx', $line, $regs)){
          continue;
       }
-      if($GLOBALS['_seo_config']['encoding'] != 'utf-8' && function_exists('iconv')){
+      if($needConvert && $GLOBALS['_seo_config']['encoding'] != 'utf-8' && function_exists('iconv')){
          $line = iconv('utf-8', $GLOBALS['_seo_config']['encoding'], $line);
       }
       @$result[$currentUrl][$currentTag] .= $line;

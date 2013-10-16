@@ -5,7 +5,7 @@ require_once _SEO_DIRECTORY . 'functions.php';
 $GLOBALS['_seo_config'] = include dirname(__FILE__) . '/../config.php';
 
 if(@$_GET['action'] == 'get_items'){
-   $config = config2file(_SEO_DIRECTORY . 'config.ini');
+   $config = config2file(_SEO_DIRECTORY . 'config.ini', false);
    echo php2js(array_values($config));
    return;
 }
