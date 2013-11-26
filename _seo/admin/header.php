@@ -22,6 +22,7 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
 
    <?php if(isset($_SESSION['_seo_auth'])): ?>
       <script src="angular.js"></script>
+      <script src="angular-sanitize.min.js"></script>
       <script src="scripts.js"></script>
    <?php endif; ?>
 </head>

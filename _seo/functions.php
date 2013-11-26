@@ -62,3 +62,18 @@ function config2file($file, $needConvert = true)
    }
    return $result;
 }
+
+function getRememberCache()
+{
+   $filePath = dirname(__FILE__) . '/admin/remember_cache.txt';
+   if(!file_exists($filePath)){
+      return array();
+   }
+
+   return json_decode(file_get_contents($filePath), true);
+}
+
+function writeRememberCache($cache)
+{
+   file_put_contents(dirname(__FILE__) . '/admin/remember_cache.txt', php2js($cache));
+}

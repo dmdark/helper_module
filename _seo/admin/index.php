@@ -91,6 +91,11 @@
                </div>
             <?php endforeach; ?>
 
+            <div style="text-align: right;" ng-show="item.rememberCache">
+               <a href="" ng-click="item.showCache = !item.showCache">show remember cache</a>
+            </div>
+            <code ng-show="item.showCache" ng-bind-html="item.rememberCache">
+            </code>
          </div>
       </div>
 

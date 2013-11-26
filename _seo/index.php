@@ -9,6 +9,17 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
    // проверяем, может нам пришел старый урл, который мы должны бы заменить. Редиректим!
    $pageInfo = getCurrentPageInfo(false);
    if(!empty($pageInfo['newUrl'])){
+
+      if(@$GLOBALS['_seo_config']['rememberMode']){
+         $cache = getRememberCache();
+         $rememberCache = array();
+         $rememberCache['_GET'] = $_GET;
+         $rememberCache['_REQUEST'] = $_REQUEST;
+         $rememberCache['_SERVER'] = $_SERVER;
+         $cache[$pageInfo['newUrl']] = $rememberCache;
+         writeRememberCache($cache);
+      }
+
       header('HTTP/1.1 301 Moved Permanently');
       header('Location: http://' . $_SERVER['HTTP_HOST'] . $pageInfo['newUrl']);
       exit;
@@ -19,6 +30,14 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       header('HTTP/1.1 200 Ok');
       $_SERVER['REQUEST_URI'] = $pageInfo['url'];
       $_GET = getGETparamsFromUrl($pageInfo['url']);
+
+      $cache = getRememberCache();
+      if(isset($cache[$pageInfo['newUrl']])){
+         $rememberCache = $cache[$pageInfo['newUrl']];
+         $_SERVER = $rememberCache['_SERVER'];
+         $_GET = $rememberCache['_GET'];
+         $_REQUEST = $rememberCache['_REQUEST'];
+      }
    }
 }
 
@@ -227,6 +246,6 @@ function deleteNonUtfSymbols()
       '?', $GLOBALS['_seo_content']);
 
    $GLOBALS['_seo_content'] = preg_replace('/\xE0[\x80-\x9F][\x80-\xBF]' .
-   '|\xED[\xA0-\xBF][\x80-\xBF]/S', '?', $GLOBALS['_seo_content']);
+      '|\xED[\xA0-\xBF][\x80-\xBF]/S', '?', $GLOBALS['_seo_content']);
 
 }

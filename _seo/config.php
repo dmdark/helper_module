@@ -23,6 +23,7 @@ $config = array(
       'login' => 'admin',
       'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
    ),
+   'rememberMode' => 1
 );
 
 /*

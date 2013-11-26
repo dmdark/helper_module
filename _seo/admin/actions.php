@@ -6,6 +6,14 @@ $GLOBALS['_seo_config'] = include dirname(__FILE__) . '/../config.php';
 
 if(@$_GET['action'] == 'get_items'){
    $config = config2file(_SEO_DIRECTORY . 'config.ini', false);
+   $rememberCache = getRememberCache();
+
+   foreach($config as &$info){
+      if(isset($rememberCache[$info['newUrl']])){
+         $info['rememberCache'] = nl2br(print_r($rememberCache[$info['newUrl']], true));
+      }
+   }
+
    echo php2js(array_values($config));
    return;
 }

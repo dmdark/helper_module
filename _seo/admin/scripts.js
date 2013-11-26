@@ -1,6 +1,9 @@
-function SeoController($scope, $http){
+function SeoController($scope, $http, $sce){
    $http.get('actions.php?action=get_items').success(function (data){
       $scope.items = data;
+      angular.forEach($scope.items, function (item){
+         item.rememberCache = $sce.trustAsHtml(item.rememberCache);
+      });
    });
 
    $scope.SaveAll = function (){
