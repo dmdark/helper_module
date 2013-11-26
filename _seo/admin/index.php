@@ -1,31 +1,7 @@
-<?php
-session_start();
-define('_SEO_DIRECTORY', dirname(__FILE__) . '/../');
-require_once _SEO_DIRECTORY . 'functions.php';
-$config = require_once _SEO_DIRECTORY . 'config.php';
+<?php require_once 'header.php'; ?>
 
-if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5($_POST['password']) == $config['adminConfig']['password']){
-   $_SESSION['_seo_auth'] = 1;
-   header('Location: /_seo/admin/');
-   return;
-}
-
-
-?>
-<!DOCTYPE html>
-<html lang="en" ng-app>
-<head>
-   <meta charset="utf-8">
-   <title>Matik SEO admin</title>
-   <link rel="stylesheet" href="bootstrap.css">
-   <link rel="stylesheet" href="styles.css">
-
-   <?php if(isset($_SESSION['_seo_auth'])): ?>
-      <script src="angular.js"></script>
-      <script src="scripts.js"></script>
-   <?php endif; ?>
-</head>
 <body ng-controller="SeoController">
+
 <?php if(!isset($_SESSION['_seo_auth'])): ?>
    <!-- Авторизация -->
    <div class="auth_container">
@@ -46,6 +22,7 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
          <ul class="nav navbar-nav">
             <li class="active"><a href="/_seo/admin/">Редактирование</a></li>
             <li><a href="/" target="_blank">Перейти на сайт!</a></li>
+            <li><a href="/_seo/admin/test.php">Потестировать</a></li>
          </ul>
 
       </div>
