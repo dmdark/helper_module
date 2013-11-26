@@ -14,8 +14,20 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
          $cache = getRememberCache();
          $rememberCache = array();
          $rememberCache['_GET'] = $_GET;
-         $rememberCache['_REQUEST'] = $_REQUEST;
-         $rememberCache['_SERVER'] = $_SERVER;
+
+         $the_server = array();
+         foreach($_SERVER as $key => $value){
+            if(strpos($key, 'HTTP_') === 0) continue;
+            if(strpos($key, 'SERVER_') === 0) continue;
+            if(strpos($key, 'REMOTE_') === 0) continue;
+            if(strpos($key, 'REDIRECT_') === 0) continue;
+            if(strpos($key, 'GATEWAY_') === 0) continue;
+            if($key == 'PATH') continue;
+            if($key == 'REQUEST_TIME') continue;
+            $the_server[$key] = $value;
+         }
+         $rememberCache['_SERVER'] = $the_server;
+
          $cache[$pageInfo['newUrl']] = $rememberCache;
          writeRememberCache($cache);
       }
@@ -34,9 +46,13 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       $cache = getRememberCache();
       if(isset($cache[$pageInfo['newUrl']])){
          $rememberCache = $cache[$pageInfo['newUrl']];
-         $_SERVER = $rememberCache['_SERVER'];
-         $_GET = $rememberCache['_GET'];
-         $_REQUEST = $rememberCache['_REQUEST'];
+         foreach($rememberCache['_SERVER'] as $key => $value){
+            $_SERVER[$key] = $value;
+         }
+         foreach($rememberCache['_GET'] as $key => $value){
+            $_GET[$key] = $value;
+            $_REQUEST[$key] = $value;
+         }
       }
    }
 }
