@@ -87,31 +87,15 @@ function _seo_apply()
       $commonFunctions = @$GLOBALS['_seo_config']['module_query']['common_functions'];
       $userFunction = @$GLOBALS['_seo_config']['module_query']['functions'][getCurrentUrl()];
       if(!empty($commonFunctions) || !empty($userFunction)){
-         $doc = '';
-         $library = @$GLOBALS['_seo_config']['module_query']['use_library'];
-         if($library == 'phpQuery'){
-            require_once dirname(__FILE__) . '/phpQuery-onefile.php';
-            $doc = phpQuery::newDocumentHTML($GLOBALS['_seo_content']);
-         } elseif($library == 'PQLite'){
-            require_once dirname(__FILE__) . '/PQLite/PQLite.php';
-            $doc = new PQLite($GLOBALS['_seo_content']);
-
-         }
 
          // common functions
          if(!empty($commonFunctions)) foreach($commonFunctions as $commonFunction){
-            call_user_func($commonFunction, $doc, getCurrentPageInfo());
+            call_user_func($commonFunction, getCurrentPageInfo());
          }
 
          // specific page function
          if(!empty($userFunction)){
-            call_user_func($userFunction, $doc, getCurrentPageInfo());
-         }
-
-         if($library == 'phpQuery'){
-            $GLOBALS['_seo_content'] = $doc->htmlOuter();
-         } elseif($library == 'PQLite'){
-            $GLOBALS['_seo_content'] = $doc->getHTML();
+            call_user_func($userFunction, getCurrentPageInfo());
          }
       }
 
@@ -187,6 +171,7 @@ function applyMeta()
             }
          }
          /*$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader) . $headHtml . (mb_substr($GLOBALS['_seo_content'], $headEnd + 7));*/
+         // $GLOBALS['_seo_content'] = substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader + 1) . $headHtml . (substr($GLOBALS['_seo_content'], $headEnd));
          $GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%simx' . $add_regexp, '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
       }
    } catch (Exception $e){
