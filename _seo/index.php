@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__FILE__) . '/admin/defines.php';
 require_once dirname(__FILE__) . '/functions.php';
 initConfig();
 
@@ -34,6 +35,15 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
 
       header('HTTP/1.1 301 Moved Permanently');
       header('Location: http://' . $_SERVER['HTTP_HOST'] . $pageInfo['newUrl']);
+      exit;
+   }
+
+   // быть может модуль редиректов хочет вмешаться?
+   $redirects = _s_getRedirects();
+   $dest = @$redirects[$_SERVER['REQUEST_URI']];
+   if(!empty($dest)){
+      header('HTTP/1.1 301 Moved Permanently');
+      header('Location: http://' . $_SERVER['HTTP_HOST'] . $dest);
       exit;
    }
 

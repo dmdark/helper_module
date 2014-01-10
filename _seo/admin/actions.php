@@ -1,8 +1,30 @@
 <?php
 header('Content-Type: text/html; charset=utf-8');
-define('_SEO_DIRECTORY', dirname(__FILE__) . '/../');
+require_once dirname(__FILE__) . '/defines.php';
 require_once _SEO_DIRECTORY . 'functions.php';
+
 $GLOBALS['_seo_config'] = include dirname(__FILE__) . '/../config.php';
+
+if(@$_GET['module'] == 'redirects'){
+   if($_GET['action'] == 'add'){
+      $postData = trim($HTTP_RAW_POST_DATA);
+      if(!empty($postData)){
+         _s_saveRedirects($postData);
+      }
+      exit;
+   }
+   if($_GET['action'] == 'get'){
+      echo php2js(_s_getRedirects());
+      exit;
+   }
+
+   if($_GET['action'] == 'delete'){
+      $postData = json_decode($HTTP_RAW_POST_DATA, true);
+      _s_deleteRedirect($postData['source'], $postData['dest']);
+      exit;
+   }
+   exit;
+}
 
 if(@$_GET['action'] == 'get_items'){
    $config = config2file(_SEO_DIRECTORY . 'config.ini', false);
