@@ -69,3 +69,19 @@ class _SeoHttpOutputBuffer extends HTTPOutputBuffer {
    }
 }
 $buffer = OutputBuffer::current('_SeoHttpOutputBuffer');
+
+
+
+
+=== Модуль замены ===
+
+Для вставки с заменой содержимого:
+<!--##t_1-->
+вывод
+<!--/##t_1-->
+
+
+Для вставки без замены
+<!--##t_1-->
+
+где t_1 это имя текстовой переменной, задается в конфиге

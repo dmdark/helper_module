@@ -85,10 +85,18 @@
             <?php
             $additionalTags = @$config['adminConfig']['additionalTags'];
             if(!empty($additionalTags)) foreach($additionalTags as $additionalTag): ?>
-               <div class="input-group" style="margin-top: 7px;">
-                  <span class="input-group-addon"><?php echo $additionalTag; ?></span>
-                  <input type="text" class="form-control" placeholder="<?php echo $additionalTag; ?>" ng-model="item.<?php echo $additionalTag; ?>">
-               </div>
+               <?php if(strpos($additionalTag, 't_') !== false): ?>
+                  <div class="input-group" style="margin-top: 7px;">
+                     <span class="input-group-addon"><?php echo $additionalTag; ?></span>
+                     <textarea class="form-control" placeholder="<?php echo $additionalTag; ?>"
+                               ng-model="item.<?php echo $additionalTag; ?>"></textarea>
+                  </div>
+               <?php else: ?>
+                  <div class="input-group" style="margin-top: 7px;">
+                     <span class="input-group-addon"><?php echo $additionalTag; ?></span>
+                     <input type="text" class="form-control" placeholder="<?php echo $additionalTag; ?>" ng-model="item.<?php echo $additionalTag; ?>">
+                  </div>
+               <?php endif; ?>
             <?php endforeach; ?>
 
             <div style="text-align: right;" ng-show="item.rememberCache">
@@ -98,7 +106,6 @@
             </code>
          </div>
       </div>
-
    </div>
 <?php endif; ?>
 </body>

@@ -82,6 +82,11 @@ function _seo_apply()
       applyMeta();
    }
 
+   if(@$GLOBALS['_seo_config']['module_label_replacement'] && !empty($GLOBALS['_seo_content'])){
+      applyLabelReplacement();
+   }
+
+
    // вызываем пользовательскую функцию для страницы и меняем контент как хотим
    if(@$GLOBALS['_seo_config']['module_query']['enabled'] && !empty($GLOBALS['_seo_content'])){
       $commonFunctions = @$GLOBALS['_seo_config']['module_query']['common_functions'];
@@ -210,6 +215,34 @@ function applyUrls()
       }
    }
 
+}
+
+function applyLabelReplacement()
+{
+   $pageInfo = getCurrentPageInfo();
+
+   $e = $GLOBALS['_seo_config']['encoding'];
+
+   $keys = $GLOBALS['_seo_config']['adminConfig']['additionalTags'];
+   foreach($keys as $key){
+      if(strpos($key, 't_') !== false){
+         $value = getSpecialProperty($pageInfo['url'], $key);
+
+         $startKey = '<!--##' . $key . '-->';
+         $endKey = '<!--/##' . $key . '-->';
+
+         $posStart = mb_strpos($GLOBALS['_seo_content'], $startKey, null, $e);
+         $posEnd = mb_strpos($GLOBALS['_seo_content'], $endKey, $posStart, $e);
+         if(empty($posEnd)){
+            $posEnd = $posStart;
+         }
+         $posEnd += mb_strlen($endKey, $e);
+
+         if(!empty($posStart)){
+            $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, 99999999, $e);
+         }
+      }
+   }
 }
 
 function initConfig()

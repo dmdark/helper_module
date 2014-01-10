@@ -63,6 +63,28 @@ function config2file($file, $needConvert = true)
    return $result;
 }
 
+function item2config($data)
+{
+   $config = '';
+   $config .= 'url=' . $data['url'] . "\n";
+   if(!empty($data['newUrl'])){
+      $config .= 'newUrl=' . $data['newUrl'] . "\n";
+   }
+   $config .= 'title=' . $data['title'] . "\n";
+   unset($data['url']);
+   unset($data['newUrl']);
+   unset($data['title']);
+   unset($data['rememberCache']);
+   unset($data['showCache']);
+   foreach($data as $key => $val){
+      // не сохраняем особые типы данных
+      if(strpos($key, 't_') === false){
+         $config .= $key . '=' . $val . "\n";
+      }
+   }
+   return $config;
+}
+
 function getRememberCache()
 {
    $filePath = dirname(__FILE__) . '/admin/remember_cache.txt';
@@ -76,4 +98,48 @@ function getRememberCache()
 function writeRememberCache($cache)
 {
    file_put_contents(dirname(__FILE__) . '/admin/remember_cache.txt', php2js($cache));
+}
+
+function getDatabaseDirectoryForUrl($url)
+{
+   $dirName = rawurlencode($url);
+   $dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . $dirName . DIRECTORY_SEPARATOR;
+   if(!is_dir($dir)){
+      mkdir($dir, 0777, true);
+   }
+   return $dir;
+}
+
+function saveSpecialData(&$data)
+{
+   $dir = getDatabaseDirectoryForUrl($data['url']);
+   foreach($data as $key => $value){
+      if(strpos($key, 't_') !== false){
+         $propertyFile = $dir . $key . '.html';
+         file_put_contents($propertyFile, $value);
+         unset($data[$key]);
+      }
+   }
+}
+
+function addSpecialProperties(&$data)
+{
+   $dir = getDatabaseDirectoryForUrl($data['url']);
+
+   $keys = $GLOBALS['_seo_config']['adminConfig']['additionalTags'];
+   foreach($keys as $key){
+      if(strpos($key, 't_') !== false){
+         $data[$key] = @file_get_contents($dir . $key . '.html');
+         if (empty($data[$key])) {
+            $data[$key] = '';
+         }
+      }
+   }
+
+   return $data;
+}
+
+function getSpecialProperty($url, $key)
+{
+   return @file_get_contents(getDatabaseDirectoryForUrl($url) . $key . '.html');
 }

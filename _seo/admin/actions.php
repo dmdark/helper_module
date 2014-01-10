@@ -12,6 +12,8 @@ if(@$_GET['action'] == 'get_items'){
       if(isset($rememberCache[$info['newUrl']])){
          $info['rememberCache'] = nl2br(print_r($rememberCache[$info['newUrl']], true));
       }
+
+      $specialData = addSpecialProperties($info);
    }
 
    echo php2js(array_values($config));
@@ -22,8 +24,13 @@ $postData = json_decode($HTTP_RAW_POST_DATA, true);
 if(!empty($postData)){
    $configData = '';
    $i = 0;
+
    foreach($postData as $data){
       if(empty($data['url'])) continue;
+
+      // сохраняем особые типы данных
+      saveSpecialData($data);
+
       if($i++ > 0){
          $configData .= "===\n";
       }
@@ -34,19 +41,3 @@ if(!empty($postData)){
    }
 }
 
-function item2config($data)
-{
-   $config = '';
-   $config .= 'url=' . $data['url'] . "\n";
-   if(!empty($data['newUrl'])){
-      $config .= 'newUrl=' . $data['newUrl'] . "\n";
-   }
-   $config .= 'title=' . $data['title'] . "\n";
-   unset($data['url']);
-   unset($data['newUrl']);
-   unset($data['title']);
-   foreach($data as $key => $val){
-      $config .= $key . '=' . $val . "\n";
-   }
-   return $config;
-}

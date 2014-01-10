@@ -15,9 +15,10 @@ $config = array(
          '/contacts/' => 'function_contacts',
       )
    ),
+   'module_label_replacement' => 1,
    'adminConfig' => array(
       'additionalTags' => array(
-         'h1', // array('seo_text1', 'textarea'), array('seo_text2', 'textarea'),
+         'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_
       ),
       'login' => 'admin',
       'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
