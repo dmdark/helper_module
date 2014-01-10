@@ -1,6 +1,6 @@
 <?php
 session_start();
-define('_SEO_DIRECTORY', dirname(__FILE__) . '/../');
+
 require_once _SEO_DIRECTORY . 'functions.php';
 $config = require_once _SEO_DIRECTORY . 'config.php';
 

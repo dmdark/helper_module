@@ -1,33 +1,14 @@
-<?php require_once 'header.php'; ?>
+<?php
+require_once 'defines.php';
+require_once _BLOCKS_DIRECTORY . 'header.php';
+?>
 
-<body ng-controller="SeoController">
+<body>
 
 <?php if(!isset($_SESSION['_seo_auth'])): ?>
-   <!-- Авторизация -->
-   <div class="auth_container">
-      <form class="form-inline" action="" method="post">
-         <input type="text" class="form-control" placeholder="Login" name="login"/>
-         <input type="password" class="form-control" placeholder="Password" name="password"/>
-         <br/>
-         <button type="submit" class="btn btn-default">Войти</button>
-      </form>
-   </div>
+   <?php require_once _BLOCKS_DIRECTORY . 'auth.php'; ?>
 <?php else: ?>
-
-   <div class="navbar navbar-static-top navbar-inverse">
-      <div class="container">
-
-         <a class="navbar-brand" href="/_seo/admin/">Matik SEO admin</a>
-
-         <ul class="nav navbar-nav">
-            <li><a href="/_seo/admin/">Редактирование</a></li>
-            <li><a href="/" target="_blank">Перейти на сайт!</a></li>
-            <li class="active"><a href="/_seo/admin/test.php">Потестировать</a></li>
-         </ul>
-
-      </div>
-   </div>
-
+   <?php require_once _BLOCKS_DIRECTORY . 'navigation.php'; ?>
 
    <div class="container">
       <?php require_once(dirname(__FILE__) . '/tests/tests.php'); ?>
