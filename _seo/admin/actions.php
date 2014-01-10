@@ -26,6 +26,18 @@ if(@$_GET['module'] == 'redirects'){
    exit;
 }
 
+if(@$_GET['module'] == 'error404'){
+   if($_GET['action'] == 'get'){
+      echo _s_getErrors404();
+      exit;
+   }
+   if($_GET['action'] == 'save'){
+      _s_saveErrors404($HTTP_RAW_POST_DATA);
+      exit;
+   }
+   exit;
+}
+
 if(@$_GET['action'] == 'get_items'){
    $config = config2file(_SEO_DIRECTORY . 'config.ini', false);
    $rememberCache = getRememberCache();

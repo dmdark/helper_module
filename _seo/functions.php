@@ -146,23 +146,31 @@ function getSpecialProperty($url, $key)
    return @file_get_contents(getDatabaseDirectoryForUrl($url) . $key . '.html');
 }
 
-function _s_saveRedirects($postData)
+// redirect functions
+
+define('R_DELIM', '===');
+
+function _s_saveRedirects($postData, $append = true)
 {
    $resultArray = array();
+   if($append){
+      $resultArray = _s_getRedirects(true);
+   }
 
    $pairs = explode("\n", $postData);
    foreach($pairs as $pair){
-      list($source, $dest) = explode(' ', $pair);
+      list($source, $dest) = explode(R_DELIM, $pair);
       $source = trim(parse_url($source, PHP_URL_PATH) . parse_url($source, PHP_URL_QUERY));
       $dest = trim(parse_url($dest, PHP_URL_PATH) . parse_url($dest, PHP_URL_QUERY));
       if(!empty($source) && !empty($dest)){
-         $resultArray[] = $source . '===' . $dest;
+         $resultArray[] = $source . R_DELIM . $dest;
       }
    }
+
    file_put_contents(_SEO_DIRECTORY . 'redirects.ini', join("\n", $resultArray));
 }
 
-function _s_getRedirects()
+function _s_getRedirects($asArray = false)
 {
    $contents = file_get_contents(_SEO_DIRECTORY . 'redirects.ini');
    $pairs = explode("\n", $contents);
@@ -170,9 +178,14 @@ function _s_getRedirects()
    $result = array();
    if(!empty($pairs)){
       foreach($pairs as $pair){
-         list($source, $dest) = explode('===', $pair);
+         list($source, $dest) = explode(R_DELIM, $pair);
          if(!empty($source) && !empty($dest)){
-            $result[$source] = $dest;
+            if($asArray){
+               $result[] = $source . R_DELIM . $dest;
+            } else{
+               $result[$source] = $dest;
+            }
+
          }
       }
    }
@@ -185,8 +198,31 @@ function _s_deleteRedirect($source, $dest)
    $redirects = _s_getRedirects();
    foreach($redirects as $key => $value){
       if(!($key == $source && $dest == $value)){
-         $resultArray[] = $key . ' ' . $value;
+         $resultArray[] = $key . R_DELIM . $value;
       }
    }
-   _s_saveRedirects(join("\n", $resultArray));
+   _s_saveRedirects(join("\n", $resultArray), false);
+}
+
+// 404 errors
+function _s_getErrors404($asArray = false)
+{
+   if($asArray){
+      return file(_SEO_DIRECTORY . 'errors404.ini');
+   } else{
+      return @file_get_contents(_SEO_DIRECTORY . 'errors404.ini');
+   }
+}
+
+function _s_saveErrors404($data)
+{
+   $results = array();
+   $errors = explode("\n", $data);
+   foreach($errors as $error){
+      $url = trim(parse_url($error, PHP_URL_PATH) . parse_url($error, PHP_URL_QUERY));
+      if(!empty($url)){
+         $results[] = $url;
+      }
+   }
+   file_put_contents(_SEO_DIRECTORY . 'errors404.ini', join("\n", $results));
 }

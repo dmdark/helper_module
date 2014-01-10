@@ -47,6 +47,18 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       exit;
    }
 
+   // быть может модуль 404 ошибки?
+   $errors404 = _s_getErrors404(true);
+   if(in_array($_SERVER['REQUEST_URI'], $errors404)){
+      header("HTTP/1.0 404 Not Found");
+      header("Status: 404 Not Found");
+      $page404 = _SEO_DIRECTORY . '404.html';
+      if(file_exists($page404)){
+         echo file_get_contents($page404);
+      }
+      exit;
+   }
+
    $pageInfo = getCurrentPageInfo(true, false);
    if(!empty($pageInfo['newUrl'])){
       header('HTTP/1.1 200 Ok');

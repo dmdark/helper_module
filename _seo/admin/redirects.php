@@ -21,8 +21,12 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
       <div class="row" style="margin-top: 20px;">
          <table class="table table-hover table-striped table-condensed">
             <tr ng-repeat="(source, dest) in items">
-               <td style="text-align: right; padding-right: 15px;">{{ source }}</td>
-               <td>{{ dest }}</td>
+               <td style="text-align: right; padding-right: 15px;">
+                  <a target="_blank" ng-href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{source}}">{{ source }}</a>
+               </td>
+               <td>
+                  <a target="_blank" ng-href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{dest}}">{{ dest }}</a>
+               </td>
                <td style="text-align: right">
                   <button class="btn btn-small btn-danger" ng-click="Delete(source, dest)">del</button>
                </td>
@@ -30,8 +34,6 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
          </table>
       </div>
    </div>
-
-
 <?php endif; ?>
 </body>
 </html>
