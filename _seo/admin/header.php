@@ -17,13 +17,13 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
 <head>
    <meta charset="utf-8">
    <title>Matik SEO admin</title>
-   <link rel="stylesheet" href="bootstrap.css">
-   <link rel="stylesheet" href="styles.css">
+   <link rel="stylesheet" href="css/bootstrap.css">
+   <link rel="stylesheet" href="css/styles.css">
 
    <?php if(isset($_SESSION['_seo_auth'])): ?>
-      <script src="angular.min.js"></script>
-      <script src="angular-sanitize.min.js"></script>
-      <script src="scripts.js"></script>
+      <script src="js/angular.min.js"></script>
+      <script src="js/angular-sanitize.min.js"></script>
+      <script src="js/scripts.js"></script>
    <?php endif; ?>
 </head>
 
