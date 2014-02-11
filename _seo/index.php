@@ -250,10 +250,13 @@ function applyLabelReplacement()
    $keys = $GLOBALS['_seo_config']['adminConfig']['additionalTags'];
    foreach($keys as $key){
       if(strpos($key, 't_') !== false){
-         $value = getSpecialProperty($pageInfo['url'], $key);
+         $value = trim(getSpecialProperty($pageInfo['url'], $key));
+         if(empty($value)){
+            continue;
+         }
 
-         $startKey = '<!--##' . $key . '-->';
-         $endKey = '<!--/##' . $key . '-->';
+         $startKey = '<!--$$' . $key . '-->';
+         $endKey = '<!--/$$' . $key . '-->';
 
          $posStart = mb_strpos($GLOBALS['_seo_content'], $startKey, null, $e);
          $posEnd = mb_strpos($GLOBALS['_seo_content'], $endKey, $posStart, $e);
