@@ -20,15 +20,15 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 
       <div class="row" style="margin-top: 20px;">
          <table class="table table-hover table-striped table-condensed">
-            <tr ng-repeat="(source, dest) in items">
+            <tr ng-repeat="item in items">
                <td style="text-align: right; padding-right: 15px;">
-                  <a target="_blank" ng-href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{source}}">{{ source }}</a>
+                  <a target="_blank" ng-href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{item.source}}">{{ item.source }}</a>
                </td>
                <td>
-                  <a target="_blank" ng-href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{dest}}">{{ dest }}</a>
+                  <a target="_blank" ng-href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{item.dest}}">{{ item.dest }}</a>
                </td>
                <td style="text-align: right">
-                  <button class="btn btn-small btn-danger" ng-click="Delete(source, dest)">del</button>
+                  <button class="btn btn-small btn-danger" ng-click="Delete(item.source, item.dest)">del</button>
                </td>
             </tr>
          </table>

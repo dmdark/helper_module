@@ -18,7 +18,7 @@ if(!function_exists('php2js')){
          // we should get the same result in the JS frontend (string).
          // Character replacements for JSON.
          static $jsonReplaces = array(array("\\", "/", "\n", "\t", "\r", "\b", "\f", '"'),
-            array('\\\\', '\\/', '\\n', '\\t', '\\r', '\\b', '\\f', '\"'));
+               array('\\\\', '\\/', '\\n', '\\t', '\\r', '\\b', '\\f', '\"'));
          return '"' . str_replace($jsonReplaces[0], $jsonReplaces[1], $a) . '"';
       }
       $isList = true;
@@ -102,6 +102,7 @@ function writeRememberCache($cache)
    file_put_contents(dirname(__FILE__) . '/admin/remember_cache.txt', php2js($cache));
 }
 
+// database for special items
 function getDatabaseDirectoryForUrl($url)
 {
    $dirName = rawurlencode($url);
@@ -149,59 +150,47 @@ function getSpecialProperty($url, $key)
 // redirect functions
 
 define('R_DELIM', '===');
+define('R_FILE', _SEO_DIRECTORY . 'redirects.ini');
 
-function _s_saveRedirects($postData, $append = true)
+function _s_addRedirects($postData, $replaceAll = true)
 {
-   $resultArray = array();
-   if($append){
-      $resultArray = _s_getRedirects(true);
-   }
+   $resultArray = _s_getRedirects();
 
    $pairs = explode("\n", $postData);
    foreach($pairs as $pair){
-      list($source, $dest) = explode(R_DELIM, $pair);
-      $source = trim(parse_url($source, PHP_URL_PATH) . parse_url($source, PHP_URL_QUERY));
-      $dest = trim(parse_url($dest, PHP_URL_PATH) . parse_url($dest, PHP_URL_QUERY));
+      list($source, $dest) = array_map('_s_clear_url', explode(' ', $pair));
       if(!empty($source) && !empty($dest)){
-         $resultArray[] = $source . R_DELIM . $dest;
+         $resultArray[] = array(
+               'source' => $source,
+               'dest' => $dest,
+         );
       }
    }
 
-   file_put_contents(_SEO_DIRECTORY . 'redirects.ini', join("\n", $resultArray));
+   file_put_contents(_SEO_DIRECTORY . 'redirects.ini', php2js($resultArray));
 }
 
-function _s_getRedirects($asArray = false)
+function _s_getRedirects()
 {
-   $contents = file_get_contents(_SEO_DIRECTORY . 'redirects.ini');
-   $pairs = explode("\n", $contents);
-
-   $result = array();
-   if(!empty($pairs)){
-      foreach($pairs as $pair){
-         list($source, $dest) = explode(R_DELIM, $pair);
-         if(!empty($source) && !empty($dest)){
-            if($asArray){
-               $result[] = $source . R_DELIM . $dest;
-            } else{
-               $result[$source] = $dest;
-            }
-
-         }
-      }
-   }
-   return $result;
+   $decoded = json_decode(file_get_contents(_SEO_DIRECTORY . 'redirects.ini'), true);
+   return (!empty($decoded)) ? $decoded : array();
 }
 
 function _s_deleteRedirect($source, $dest)
 {
-   $resultArray = array();
    $redirects = _s_getRedirects();
-   foreach($redirects as $key => $value){
-      if(!($key == $source && $dest == $value)){
-         $resultArray[] = $key . R_DELIM . $value;
+
+   foreach($redirects as $i => $item){
+      if($item['source'] == $source && $item['dest'] == $dest){
+         array_splice($redirects, $i, 1);
       }
    }
-   _s_saveRedirects(join("\n", $resultArray), false);
+   file_put_contents(_SEO_DIRECTORY . 'redirects.ini', php2js($redirects));
+}
+
+function _s_clear_url($urlStr)
+{
+   return trim(parse_url($urlStr, PHP_URL_PATH) . parse_url($urlStr, PHP_URL_QUERY));
 }
 
 // 404 errors
@@ -219,7 +208,7 @@ function _s_saveErrors404($data)
    $results = array();
    $errors = explode("\n", $data);
    foreach($errors as $error){
-      $url = trim(parse_url($error, PHP_URL_PATH) . parse_url($error, PHP_URL_QUERY));
+      $url = _s_clear_url($error);
       if(!empty($url)){
          $results[] = $url;
       }

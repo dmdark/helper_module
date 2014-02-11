@@ -9,7 +9,7 @@ if(@$_GET['module'] == 'redirects'){
    if($_GET['action'] == 'add'){
       $postData = trim($HTTP_RAW_POST_DATA);
       if(!empty($postData)){
-         _s_saveRedirects($postData);
+         _s_addRedirects($postData);
       }
       exit;
    }

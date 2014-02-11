@@ -40,12 +40,14 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
 
    // быть может модуль редиректов хочет вмешаться?
    $redirects = _s_getRedirects();
-   $dest = @$redirects[$_SERVER['REQUEST_URI']];
-   if(!empty($dest)){
-      header('HTTP/1.1 301 Moved Permanently');
-      header('Location: http://' . $_SERVER['HTTP_HOST'] . $dest);
-      exit;
+   foreach($redirects as $redirect){
+      if($redirect['source'] == $_SERVER['REQUEST_URI']){
+         header('HTTP/1.1 301 Moved Permanently');
+         header('Location: http://' . $_SERVER['HTTP_HOST'] . $redirect['dest']);
+         exit;
+      }
    }
+
 
    // быть может модуль 404 ошибки?
    $errors404 = _s_getErrors404(true);
@@ -295,13 +297,13 @@ function getGETparamsFromUrl($url)
 function deleteNonUtfSymbols()
 {
    $GLOBALS['_seo_content'] = preg_replace('/[\x00-\x08\x10\x0B\x0C\x0E-\x19\x7F]' .
-      '|[\x00-\x7F][\x80-\xBF]+' .
-      '|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*' .
-      '|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})' .
-      '|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
-      '?', $GLOBALS['_seo_content']);
+         '|[\x00-\x7F][\x80-\xBF]+' .
+         '|([\xC0\xC1]|[\xF0-\xFF])[\x80-\xBF]*' .
+         '|[\xC2-\xDF]((?![\x80-\xBF])|[\x80-\xBF]{2,})' .
+         '|[\xE0-\xEF](([\x80-\xBF](?![\x80-\xBF]))|(?![\x80-\xBF]{2})|[\x80-\xBF]{3,})/S',
+         '?', $GLOBALS['_seo_content']);
 
    $GLOBALS['_seo_content'] = preg_replace('/\xE0[\x80-\x9F][\x80-\xBF]' .
-      '|\xED[\xA0-\xBF][\x80-\xBF]/S', '?', $GLOBALS['_seo_content']);
+         '|\xED[\xA0-\xBF][\x80-\xBF]/S', '?', $GLOBALS['_seo_content']);
 
 }
