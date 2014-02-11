@@ -38,6 +38,18 @@ if(!function_exists('php2js')){
       }
    }
 }
+if(!function_exists('json_decode')){
+   require_once _SEO_DIRECTORY . '/libs/JSON/JSON.php';
+
+   function json_decode($arg)
+   {
+      global $_s_services_json;
+      if(!isset($_s_services_json)){
+         $_s_services_json = new Services_JSON();
+      }
+      return $_s_services_json->decode($arg);
+   }
+}
 
 function config2file($file, $needConvert = true)
 {
