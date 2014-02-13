@@ -21,9 +21,23 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
    <link rel="stylesheet" href="css/styles.css">
 
    <?php if(isset($_SESSION['_seo_auth'])): ?>
-      <script src="js/angular.min.js"></script>
-      <script src="js/angular-sanitize.min.js"></script>
-      <script src="js/scripts.js"></script>
+      <script src="js/vendors/jquery2.1.js"></script>
+      <script src="js/vendors/bootstrap.js"></script>
+      <script src="js/vendors/angular.min.js"></script>
+      <script src="js/vendors/angular-sanitize.min.js"></script>
+
+   <?php
+   if($handle = opendir(_SEO_DIRECTORY . 'admin/js')){
+   while(false !== ($entry = readdir($handle))){
+   if(strpos($entry, 'ctrls.') === 0){
+   ?>
+      <script type="text/javascript" src="js/<?php echo $entry; ?>"></script>
+   <?php
+   }
+   }
+   }
+      ?>
+
    <?php endif; ?>
 </head>
 

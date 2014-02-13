@@ -1,29 +1,36 @@
 <?php
 $config = array(
-   'encoding' => 'utf-8',
+      'encoding' => 'utf-8',
 
-   'module_meta_enabled' => 1,
-   'module_urls_enabled' => 1,
-   'module_headers_enabled' => 1,
-   'module_query' => array(
-      'enabled' => 0,
-      'common_functions' => array(
-         '_setH1'
+      'module_meta_enabled' => 1,
+      'module_urls_enabled' => 1,
+      'module_headers_enabled' => 1,
+      'module_query' => array(
+            'enabled' => 0,
+            'common_functions' => array(
+                  '_setH1'
+            ),
+            'functions' => array(
+                  '/' => 'function_main',
+                  '/contacts/' => 'function_contacts',
+            )
       ),
-      'functions' => array(
-         '/' => 'function_main',
-         '/contacts/' => 'function_contacts',
-      )
-   ),
-   'module_label_replacement' => 1,
-   'adminConfig' => array(
-      'additionalTags' => array(
-         'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_
+      'module_label_replacement' => 1,
+      'adminConfig' => array(
+            'additionalTags' => array(
+                  'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_
+            ),
+            'information_systems' => array(
+                  array(
+                        'id' => 'reviews',
+                        'title' => 'Отзывы',
+                        'fields' => 'title', 't_text', 'author',
+                  )
+            ),
+            'login' => 'admin',
+            'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
       ),
-      'login' => 'admin',
-      'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
-   ),
-   'rememberMode' => 1
+      'rememberMode' => 1
 );
 
 /*
