@@ -101,7 +101,7 @@ function _seo_apply()
       applyUrls();
    }
 
-   // заменяем метатэги
+   // заменяем метатеги
    if(@$GLOBALS['_seo_config']['module_meta_enabled'] && !empty($GLOBALS['_seo_content'])){
       applyMeta();
    }
