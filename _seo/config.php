@@ -24,7 +24,21 @@ $config = array(
                   array(
                         'id' => 'reviews',
                         'title' => 'Отзывы',
-                        'fields' => 'title', 't_text', 'author',
+                        'fields' => array(
+                              array(
+                                    'id' => 'title',
+                                    'title' => 'Заголовок',
+                              ),
+                              array(
+                                    'id' => 'text',
+                                    'title' => 'Текст',
+                                    'type' => 'textarea',
+                              ),
+                              array(
+                                    'id' => 'author',
+                                    'title' => 'Автор',
+                              ),
+                        )
                   )
             ),
             'login' => 'admin',

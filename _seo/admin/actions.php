@@ -5,6 +5,17 @@ require_once _SEO_DIRECTORY . 'functions.php';
 
 $GLOBALS['_seo_config'] = include dirname(__FILE__) . '/../config.php';
 
+if(@$_GET['module'] == 'information_systems'){
+   if($_GET['action'] == 'get' && $_GET['id']){
+      echo php2js(_s_getInformationSystem($_GET['id']));
+      exit;
+   }
+   if($_GET['action'] == 'saveAll' && $_GET['id']){
+      _s_saveInformationSystems($_GET['id'], json_decode(trim($HTTP_RAW_POST_DATA), true));
+      exit;
+   }
+}
+
 if(@$_GET['module'] == 'redirects'){
    if($_GET['action'] == 'add'){
       $postData = trim($HTTP_RAW_POST_DATA);

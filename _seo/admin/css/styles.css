@@ -47,3 +47,29 @@
 .nav-side li a:hover {
    background-color: #F2F8BD;
 }
+
+.table-information-items tbody + tbody {
+   border-width: 1px;
+}
+
+.table-information-items table {
+
+}
+
+.table-information-items table tbody > tr > td {
+   border-top: 0;
+}
+
+.btn-xs {
+   padding: 0 10px;
+}
+
+.glyph {
+   font-size: 16px;
+   margin-left: 6px;
+   cursor: pointer;
+}
+
+.glyph:hover {
+   color: blueviolet;
+}

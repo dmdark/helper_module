@@ -227,3 +227,43 @@ function _s_saveErrors404($data)
    }
    file_put_contents(_SEO_DIRECTORY . 'errors404.ini', join("\n", $results));
 }
+
+// information_systems
+function _s_getInformationSystem($id)
+{
+   $urls = array();
+   if($handle = opendir(_SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR)){
+      while(false !== ($dir = readdir($handle))){
+         if($dir != "." && $dir != ".."){
+            $jsonFile = _SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . 'is_' . $id . '.json';
+            if(file_exists($jsonFile)){
+               $urls[] = json_decode(file_get_contents($jsonFile), true);
+            }
+         }
+      }
+      closedir($handle);
+   }
+   return $urls;
+}
+
+function _s_deleteInformationSystem($id)
+{
+   if($handle = opendir(_SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR)){
+      while(false !== ($dir = readdir($handle))){
+         if($dir != "." && $dir != ".."){
+            @unlink(_SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . 'is_' . $id . '.json');
+         }
+      }
+      closedir($handle);
+   }
+}
+
+function _s_saveInformationSystems($id, $urls)
+{
+   _s_deleteInformationSystem($id);
+
+   foreach($urls as $url){
+      $dir = getDatabaseDirectoryForUrl($url['url']);
+      file_put_contents($dir . 'is_' . $id . '.json', php2js($url));
+   }
+}
