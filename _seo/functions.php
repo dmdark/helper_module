@@ -267,3 +267,50 @@ function _s_saveInformationSystems($id, $urls)
       file_put_contents($dir . 'is_' . $id . '.json', php2js($url));
    }
 }
+
+function _s_renderInformationSystem($information_system_config, $url)
+{
+   // избавляемся от добавленных частей, чтобы получить корректный урл
+   $url = preg_replace('/(\?|&)_s=[^&]+/simx', '', $url);
+
+   $file = getDatabaseDirectoryForUrl($url) . 'is_' . $information_system_config['id'] . '.json';
+
+   if(!file_exists($file)) return '';
+
+   $information_items = json_decode(file_get_contents($file), true);
+   if(empty($information_items) || empty($information_items['items'])) return '';
+
+   if(!empty($_GET['_s']) && $information_system_config['template_item']){
+      foreach($information_items['items'] as $item){
+         if($item['url'] == $_GET['_s']){
+            return _s_render($information_system_config['template_item'], array('information_item' => $item, 'information_items' => $information_items, 'config' => $information_system_config));
+         }
+      }
+
+   }
+
+   if($information_system_config['template_list']){
+      return _s_render($information_system_config['template_list'], array('information_items' => $information_items, 'config' => $information_system_config));
+   }
+}
+
+function _s_getInformationSystemUrl($system_url, $item_url)
+{
+   $url = $system_url;
+   if(strpos($url, '?') !== false){
+      $url .= '&';
+   } else{
+      $url .= '?';
+   }
+   $url .= '_s=' . $item_url;
+   return $url;
+}
+
+function _s_render($file, $data)
+{
+   extract($data);
+   $template = _SEO_DIRECTORY . 'templates' . DIRECTORY_SEPARATOR . $file;;
+   if(file_exists($template)){
+      return include($template);
+   }
+}

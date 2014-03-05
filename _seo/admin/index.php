@@ -11,7 +11,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 
    <div class="container">
       <div class="row">
-         <form class="form-inline">
+         <form>
             <div class="col-lg-8">
                <input type="text" class="form-control" placeholder="Новая страница" ng-model="add_url">
             </div>

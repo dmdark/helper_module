@@ -1,4 +1,4 @@
-function SeoController($scope, $http, $sce){
+module.controller('SeoController', function ($scope, $http, $sce){
    $http.get('actions.php?action=get_items').success(function (data){
       $scope.items = data;
       angular.forEach($scope.items, function (item){
@@ -28,4 +28,4 @@ function SeoController($scope, $http, $sce){
       $scope.add_url = '';
    };
 
-}
+});

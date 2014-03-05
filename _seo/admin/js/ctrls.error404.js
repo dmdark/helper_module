@@ -1,4 +1,4 @@
-function Error404Controller($scope, $http){
+module.controller('Error404Controller', function ($scope, $http){
    $scope.urls = '';
 
    updateItems();
@@ -14,4 +14,4 @@ function Error404Controller($scope, $http){
          $scope.urls = data;
       });
    }
-}
+});

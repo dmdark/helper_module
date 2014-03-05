@@ -1,4 +1,4 @@
-function RedirectsController($scope, $http){
+module.controller('RedirectsController', function ($scope, $http){
    $scope.redirectsAdd = '';
    $scope.items = {};
    updateItems();
@@ -21,4 +21,4 @@ function RedirectsController($scope, $http){
          $scope.items = data;
       });
    }
-}
+});

@@ -24,6 +24,8 @@ $config = array(
                   array(
                         'id' => 'reviews',
                         'title' => 'Отзывы',
+                        'template_item' => 'information_item.php',
+                        'template_list' => 'information_items.php',
                         'fields' => array(
                               array(
                                     'id' => 'title',
@@ -38,7 +40,24 @@ $config = array(
                                     'id' => 'author',
                                     'title' => 'Автор',
                               ),
-                        )
+                        ),
+                  ),
+                  array(
+                        'id' => 'news',
+                        'title' => 'Новости',
+                        'template_item' => 'information_item.php',
+                        'template_list' => 'information_items.php',
+                        'fields' => array(
+                              array(
+                                    'id' => 'title',
+                                    'title' => 'Заголовок',
+                              ),
+                              array(
+                                    'id' => 'text',
+                                    'title' => 'Текст',
+                                    'type' => 'textarea',
+                              ),
+                        ),
                   )
             ),
             'login' => 'admin',

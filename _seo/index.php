@@ -110,6 +110,8 @@ function _seo_apply()
       applyLabelReplacement();
    }
 
+   applyInformationSystems();
+
 
    // вызываем пользовательскую функцию для страницы и меняем контент как хотим
    if(@$GLOBALS['_seo_config']['module_query']['enabled'] && !empty($GLOBALS['_seo_content'])){
@@ -270,6 +272,26 @@ function applyLabelReplacement()
          }
       }
    }
+}
+
+function applyInformationSystems()
+{
+   $e = $GLOBALS['_seo_config']['encoding'];
+   $configSystems = $GLOBALS['_seo_config']['adminConfig']['information_systems'];
+
+   if(empty($configSystems)) return;
+   foreach($configSystems as $config_item){
+      $searchFor = '<!--$*' . $config_item['id'] . '-->';
+      $pos = mb_strpos($GLOBALS['_seo_content'], $searchFor, null, $e);
+
+      if(empty($pos)) continue;
+
+
+      $html = _s_renderInformationSystem($config_item, $_SERVER['REQUEST_URI']);
+
+      $GLOBALS['_seo_content'] = str_replace($searchFor, $html, $GLOBALS['_seo_content']);
+   }
+   // <!--**is_news-->
 }
 
 function initConfig()

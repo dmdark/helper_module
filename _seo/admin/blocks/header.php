@@ -13,7 +13,7 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
 
 ?>
 <!DOCTYPE html>
-<html lang="en" ng-app>
+<html lang="en" ng-app="application">
 <head>
    <meta charset="utf-8">
    <title>Matik SEO admin</title>
@@ -25,7 +25,8 @@ if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5(
       <script src="js/vendors/bootstrap.js"></script>
       <script src="js/vendors/angular.min.js"></script>
       <script src="js/vendors/angular-sanitize.min.js"></script>
-
+      <script src="js/application.js"></script>
+      <script src="js/filters.js"></script>
    <?php
    if($handle = opendir(_SEO_DIRECTORY . 'admin/js')){
    while(false !== ($entry = readdir($handle))){
