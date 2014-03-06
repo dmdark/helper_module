@@ -268,7 +268,8 @@ function applyLabelReplacement()
          $posEnd += mb_strlen($endKey, $e);
 
          if(!empty($posStart)){
-            $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, 99999999, $e);
+				if (strtolower($e)!='utf-8') $value = mb_convert_encoding($value,$e,'utf-8');
+				$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, 99999999, $e);
          }
       }
    }
