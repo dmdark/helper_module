@@ -21,7 +21,7 @@ $config = array(
                   'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_
             ),
             'information_systems' => array(
-                  array(
+                  /*array(
                         'id' => 'reviews',
                         'title' => 'Отзывы',
                         'template_item' => 'information_item.php',
@@ -58,7 +58,7 @@ $config = array(
                                     'type' => 'textarea',
                               ),
                         ),
-                  )
+                  )*/
             ),
             'login' => 'admin',
             'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
