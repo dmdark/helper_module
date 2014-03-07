@@ -62,6 +62,7 @@ function _s_makeCrumbs() {
 					$crumbString = _s_getCrumbs($urlString,$breadcrumbRelations,true).$crumbString;
 					break;
 				}
+				unset($urlArray[$aliasCount]);
 				$aliasCount--;
 			}
 		}
