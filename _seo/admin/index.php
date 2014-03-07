@@ -72,6 +72,24 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
                   </div>
                <?php endif; ?>
             <?php endforeach; ?>
+				<?php
+				$forms = @$config['adminConfig']['forms'];
+				if(!empty($forms)) foreach($forms as $form): ?>
+					<div class="row">
+						<div class="col-lg-3">
+							<div class="input-group" style="margin-top: 7px;">
+								<span class="input-group-addon"><?php echo $form['tag']; ?></span>
+								<input type="text" class="form-control" placeholder="id формы">
+							</div>
+						</div>
+						<div class="col-lg-9">
+							<div class="input-group" style="margin-top: 7px;">
+								<span class="input-group-addon">Email'ы получателей</span>
+								<input type="text" class="form-control" placeholder="email1,email2,...">
+							</div>
+						</div>
+					</div>
+				<?php endforeach; ?>
 
             <div style="text-align: right;" ng-show="item.rememberCache">
                <a href="" ng-click="item.showCache = !item.showCache">show remember cache</a>
