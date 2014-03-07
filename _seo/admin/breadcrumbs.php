@@ -47,7 +47,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 				</div>
 				<div class="col-xs-4">
 					<div class="pull-right">
-						<button class="btn btn-primary" ng-click="addSection(newSection, sections)">Добавить</button>
+						<button class="btn btn-success" ng-click="addSection(newSection, sections)"><span class="glyphicon glyphicon-plus"></span></button>
 					</div>
 				</div>
 			</div>
@@ -67,8 +67,9 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 									</div>
 									<div class="col-xs-4">
 										<div class="pull-right">
-											<button class="btn btn-success" ng-click="addSubSection(section)"><strong>+</strong> подраздел</button>
-											<button class="btn btn-danger" ng-click="removeSection(sections,$index)">удалить</button>
+											<button class="btn btn-primary" ng-click="findChildren(section)" title="Найти и добавить подразделы автоматически"><span class="glyphicon glyphicon-zoom-in"></span></button>
+											<button class="btn btn-success" ng-click="addSubSection(section)" title="Добавить подраздел"><span class="glyphicon glyphicon-plus"></span></button>
+											<button class="btn btn-danger" ng-click="removeSection(sections,$index)" title="Удалить раздел"><span class="glyphicon glyphicon-remove"></span></button>
 										</div>
 									</div>
 								</div>
@@ -96,8 +97,9 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 					</div>
 					<div class="col-xs-4">
 						<div class="pull-right">
-							<button class="btn btn-success" ng-click="addSubSection(subsection)"><strong>+</strong> подраздел</button>
-							<button class="btn btn-danger" ng-click="removeSubSection(parent,$index)">удалить</button>
+							<button class="btn btn-primary" ng-click="findChildren(subsection)" title="Найти и добавить подразделы автоматически"><span class="glyphicon glyphicon-zoom-in"></span></button>
+							<button class="btn btn-success" ng-click="addSubSection(subsection)" title="Добавить подраздел"><span class="glyphicon glyphicon-plus"></span></button>
+							<button class="btn btn-danger" ng-click="removeSubSection(parent,$index)" title="Удалить раздел"><span class="glyphicon glyphicon-remove"></span></button>
 						</div>
 					</div>
 				</div>
@@ -113,6 +115,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 	</div>
 
 <!-- Временный вывод -->
+<!--
 	<div class="container" style="margin-top: 30px">
 		<div class="row">
 			<div class="col-xs-12">
@@ -120,7 +123,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 			</div>
 		</div>
 	</div>
-
+-->
 
 <?php endif; ?>
 </body>

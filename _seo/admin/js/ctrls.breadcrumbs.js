@@ -31,6 +31,12 @@ module.controller('breadCrumbs', function($scope,$http) {
 		element.items.splice(index,1);
 	}
 
+	$scope.findChildren = function(element) {
+		$http.post('actions.php?module=breadcrumbs&action=find', element.url).success(function(data) {
+			element.items = data;
+		});
+	}
+
 	$scope.saveAll = function() {
 		$http.post('actions.php?module=breadcrumbs&action=save', $scope.sections).success(function() {
 			$scope.alertMessage = "Сохранение успешно";
@@ -41,7 +47,7 @@ module.controller('breadCrumbs', function($scope,$http) {
 	}
 
 	function getSections(){
-		$http.get('actions.php?module=breadcrumbs&action=get').success(function (data) {
+		$http.get('actions.php?module=breadcrumbs&action=get').success(function(data) {
 			if ( Array.isArray(data) ) $scope.sections = data;
 			else $scope.sections = [];
 		});

@@ -78,6 +78,45 @@ if (@$_GET['module'] == 'breadcrumbs') {
 		}
 		exit;
 	}
+	if ($_GET['action'] == 'find') {
+		// post - относительный url (обязательно начинающийся с '/')
+		$url = trim($HTTP_RAW_POST_DATA);
+		$output = '[';
+		// Начинаем искать, если сервер возвращает ответ 200
+		$pageRequest = get_headers('http://'.$_SERVER['SERVER_NAME'].$url, 1);
+		if (strpos($pageRequest[0],'200') !== false) {
+			$pageContent = file_get_contents('http://'.$_SERVER['SERVER_NAME'].$url);
+			// Очищаем ссылки сначала от 'http://site.dom', затем от 'site.dom'
+			$pageContent = str_ireplace('http://'.$_SERVER['SERVER_NAME'],'',$pageContent);
+			$pageContent = str_ireplace($_SERVER['SERVER_NAME'],'',$pageContent);
+			$pattern = '/<a (?:[-\\ a-z0-9=\'"\/] )*href *= *(?:"|\')('.str_ireplace('/','\/',$url).'[-_a-z0-9]+\/)+/i';
+			preg_match_all($pattern,$pageContent,$matches);
+			if (array_key_exists(1,$matches) && count($matches[1]) > 0) {
+				// Удаляем дубликаты
+				$matches = array_unique($matches[1]);
+				foreach ($matches as $childUrl) {
+					$pageRequest = get_headers('http://'.$_SERVER['SERVER_NAME'].$childUrl, 1);
+					if (strpos($pageRequest[0],'200') !== false) {
+						$pageContent = file_get_contents('http://'.$_SERVER['SERVER_NAME'].$childUrl);
+						// Ищем заголовок в тексте
+						$pageTitle = '';
+						preg_match('/<h1(?: [^>]+)?>(.+?)<\/h1(?: [^>]+)?>/i',$pageContent,$titleMatches);
+						if (array_key_exists(1,$titleMatches)) $pageTitle = strip_tags($titleMatches[1]);
+						if (strlen($pageTitle) == 0) {
+							preg_match('/<title(?: [^>]+)?>(.+?)<\/title(?: [^>]+)?>/i',$GLOBALS['_seo_content'],$titleMatches);
+							if (array_key_exists(1,$titleMatches)) $pageTitle = strip_tags($titleMatches[1]);
+						}
+						if (strtolower($GLOBALS['_seo_config']['encoding'])!='utf-8') $pageTitle = mb_convert_encoding($pageTitle,'utf-8',$GLOBALS['_seo_config']['encoding']);
+						$output.= ',{"url":"'.$childUrl.'", "title":"'.$pageTitle.'", "items":[]}';
+					}
+				}
+			}
+		}
+		$output.= ']';
+		$output = str_ireplace('[,','[',$output);
+		echo $output;
+		exit;
+	}
 }
 
 $postData = json_decode($HTTP_RAW_POST_DATA, true);
