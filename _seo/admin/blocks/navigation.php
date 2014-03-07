@@ -10,6 +10,7 @@
          <li <?php if($_SERVER['REQUEST_URI'] == '/_seo/admin/redirects.php') echo 'class="active"'; ?>><a href="/_seo/admin/redirects.php">Редиректы 301</a>
          </li>
          <li <?php if($_SERVER['REQUEST_URI'] == '/_seo/admin/error404.php') echo 'class="active"'; ?>><a href="/_seo/admin/error404.php">Ошибка 404</a></li>
+			<li <?php if($_SERVER['REQUEST_URI'] == '/_seo/admin/breadcrumbs.php') echo 'class="active"'; ?>><a href="/_seo/admin/breadcrumbs.php">Крошки</a></li>
          <li><a href="/" target="_blank">Перейти на сайт!</a></li>
          <li <?php if($_SERVER['REQUEST_URI'] == '/_seo/admin/test.php') echo 'class="active"'; ?>><a href="/_seo/admin/test.php">Потестировать</a></li>
 
