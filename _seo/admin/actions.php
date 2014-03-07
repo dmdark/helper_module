@@ -65,6 +65,21 @@ if(@$_GET['action'] == 'get_items'){
    return;
 }
 
+if (@$_GET['module'] == 'breadcrumbs') {
+	$crumbs_dir = _SEO_DIRECTORY.'modules/breadcrumbs/';
+	if ($_GET['action'] == 'get') {
+		echo file_get_contents($crumbs_dir.'breadcrumbs.json');
+		exit;
+	}
+	if ($_GET['action'] == 'save') {
+		$postData = trim($HTTP_RAW_POST_DATA);
+		if (!empty($postData)) {
+			file_put_contents($crumbs_dir.'breadcrumbs.json',$postData);
+		}
+		exit;
+	}
+}
+
 $postData = json_decode($HTTP_RAW_POST_DATA, true);
 if(!empty($postData)){
    $configData = '';
@@ -85,4 +100,3 @@ if(!empty($postData)){
       file_put_contents(_SEO_DIRECTORY . 'config.ini', $configData);
    }
 }
-
