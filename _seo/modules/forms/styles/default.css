@@ -1,0 +1,25 @@
+._seo_form {
+	display: table;
+	margin: 1.5em auto 2em;
+	width: 50%;
+}
+._seo_form input, ._seo_form textarea {
+	clear: both;
+	width: 100%;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+._seo_form label {
+	margin-top: 0.5em;
+	display: inline-block;
+}
+._seo_form .error, ._seo_form .required {
+	color: #800;
+}
+._seo_form .error {
+	margin-top: 0em;
+	margin-bottom: .3em;
+}
+button[type="submit"] {
+	margin-top: 1em;
+}
