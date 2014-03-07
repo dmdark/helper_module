@@ -61,7 +61,7 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
       exit;
    }
 
-   $pageInfo = getCurrentPageInfo(true, false);
+	$pageInfo = getCurrentPageInfo(true, false);
    if(!empty($pageInfo['newUrl'])){
       header('HTTP/1.1 200 Ok');
       $_SERVER['REQUEST_URI'] = $pageInfo['url'];
@@ -79,6 +79,7 @@ if(@$GLOBALS['_seo_config']['module_urls_enabled']){
          }
       }
    }
+
 }
 
 function _seo_ob_callback($buffer)
@@ -137,6 +138,20 @@ function _seo_apply()
    if(@$GLOBALS['_seo_config']['module_headers_enabled']){
       applyHeaders();
    }
+
+	// формы
+	if(@$GLOBALS['_seo_config']['module_forms_enabled']) {
+		include_once('modules/forms/functions.php');
+		_s_makeForm();
+	}
+
+	// Хлебные крошки
+	if(@$GLOBALS['_seo_config']['module_breadcrumbs_enabled']) {
+		if (strpos($GLOBALS['_seo_content'],'<!--$$'.$GLOBALS['_seo_config']['adminConfig']['breadcrumbs']['tag'].'-->') !== false) {
+			include_once('modules/breadcrumbs/functions.php');
+			_s_makeCrumbs();
+		}
+	}
 }
 
 
@@ -250,6 +265,7 @@ function applyLabelReplacement()
    $e = $GLOBALS['_seo_config']['encoding'];
 
    $keys = $GLOBALS['_seo_config']['adminConfig']['additionalTags'];
+
    foreach($keys as $key){
       if(strpos($key, 't_') !== false){
          $value = trim(getSpecialProperty($pageInfo['url'], $key));
@@ -269,7 +285,7 @@ function applyLabelReplacement()
 
          if(!empty($posStart)){
 				if (strtolower($e)!='utf-8') $value = mb_convert_encoding($value,$e,'utf-8');
-				$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, 99999999, $e);
+            $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, 99999999, $e);
          }
       }
    }
