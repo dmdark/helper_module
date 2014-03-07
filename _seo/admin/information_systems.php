@@ -1,8 +1,6 @@
 <?php
 require_once 'defines.php';
 require_once _BLOCKS_DIRECTORY . 'header.php';
-
-
 ?>
 <body>
 <div ng-controller="InformationSystemsController">
@@ -38,7 +36,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
                   <td colspan="2">
                      <table class="table table-condensed table-stripped table-hover">
                         <tr ng-repeat="item in url.items" ng-click="EditItem(item)" ng-class="{'success': item == editItem}">
-                           <td><a ng-href="{{ url.url }}{{ item.url }}"target="_blank">{{ item.title }}</a></td>
+                           <td><a ng-href="{{ url.url }}{{ item.url }}" target="_blank">{{ item.title }}</a></td>
                            <td style="text-align: right">
                               <button class="btn btn-sm btn-danger btn-xs" ng-click="DeleteItem(url, item)">-</button>
                            </td>
