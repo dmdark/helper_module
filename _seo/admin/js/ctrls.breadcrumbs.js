@@ -33,7 +33,20 @@ module.controller('breadCrumbs', function($scope,$http) {
 
 	$scope.findChildren = function(element) {
 		$http.post('actions.php?module=breadcrumbs&action=find', element.url).success(function(data) {
-			element.items = data;
+			// Массив добавляемых элементов
+			var newLinks = [];
+			// Ищем совпадения с существующими ссылками, добавляем элементы только если их еще нет
+			for (var dataKey in data) {
+				var keyExist = false;
+				for (var elKey in element.items) {
+					if (element.items[elKey].url === data[dataKey].url) {
+						keyExist = true;
+						break;
+					}
+				}
+				if (!keyExist) newLinks.push(data[dataKey]);
+			}
+			element.items = element.items.concat(newLinks);
 		});
 	}
 
