@@ -81,8 +81,8 @@ if (@$_GET['module'] == 'breadcrumbs') {
 	if ($_GET['action'] == 'find') {
 		// post - относительный url (обязательно начинающийся с '/')
 		$url = trim($HTTP_RAW_POST_DATA);
-		$output = '[';
-		// Начинаем искать, если сервер возвращает ответ 200
+		$output = array();
+		// Начинаем искать, только если сервер возвращает ответ 200
 		$pageRequest = get_headers('http://'.$_SERVER['SERVER_NAME'].$url, 1);
 		if (strpos($pageRequest[0],'200') !== false) {
 			$pageContent = file_get_contents('http://'.$_SERVER['SERVER_NAME'].$url);
@@ -107,13 +107,12 @@ if (@$_GET['module'] == 'breadcrumbs') {
 							if (array_key_exists(1,$titleMatches)) $pageTitle = strip_tags($titleMatches[1]);
 						}
 						if (strtolower($GLOBALS['_seo_config']['encoding'])!='utf-8') $pageTitle = mb_convert_encoding($pageTitle,'utf-8',$GLOBALS['_seo_config']['encoding']);
-						$output.= ',{"url":"'.$childUrl.'", "title":"'.$pageTitle.'", "items":[]}';
+						$output[]= array('url'=>$childUrl,'title'=>$pageTitle,'items'=>array());
 					}
 				}
 			}
 		}
-		$output.= ']';
-		$output = str_ireplace('[,','[',$output);
+		$output = json_encode($output);
 		echo $output;
 		exit;
 	}
