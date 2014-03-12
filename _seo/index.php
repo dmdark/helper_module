@@ -6,12 +6,12 @@ initConfig();
 // отправляем правильную кодировку
 header('Content-Type: text/html; charset=' . $GLOBALS['_seo_config']['encoding']);
 
-if(@$GLOBALS['_seo_config']['module_urls_enabled']){
+if(array_key_exists('module_urls_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_urls_enabled']){
    // проверяем, может нам пришел старый урл, который мы должны бы заменить. Редиректим!
    $pageInfo = getCurrentPageInfo(false);
    if(!empty($pageInfo['newUrl'])){
 
-      if(@$GLOBALS['_seo_config']['rememberMode']){
+      if(array_key_exists('rememberMode',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['rememberMode']){
          $cache = getRememberCache();
          $rememberCache = array();
          $rememberCache['_GET'] = $_GET;
@@ -93,21 +93,21 @@ function _seo_apply()
 {
    initConfig();
 
-   if(@$GLOBALS['_seo_config']['encoding'] == 'utf-8'){
+   if(array_key_exists('encoding',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['encoding'] == 'utf-8'){
       deleteNonUtfSymbols();
    }
 
-   if(@$GLOBALS['_seo_config']['module_urls_enabled']){
+   if(array_key_exists('module_urls_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_urls_enabled']){
       // делаем ЧПУ, заменяя ссылки
       applyUrls();
    }
 
    // заменяем метатэги
-   if(@$GLOBALS['_seo_config']['module_meta_enabled'] && !empty($GLOBALS['_seo_content'])){
+   if(array_key_exists('module_meta_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_meta_enabled'] && !empty($GLOBALS['_seo_content'])){
       applyMeta();
    }
 
-   if(@$GLOBALS['_seo_config']['module_label_replacement'] && !empty($GLOBALS['_seo_content'])){
+   if(array_key_exists('module_label_replacement',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_label_replacement'] && !empty($GLOBALS['_seo_content'])){
       applyLabelReplacement();
    }
 
@@ -115,9 +115,16 @@ function _seo_apply()
 
 
    // вызываем пользовательскую функцию для страницы и меняем контент как хотим
-   if(@$GLOBALS['_seo_config']['module_query']['enabled'] && !empty($GLOBALS['_seo_content'])){
-      $commonFunctions = @$GLOBALS['_seo_config']['module_query']['common_functions'];
-      $userFunction = @$GLOBALS['_seo_config']['module_query']['functions'][getCurrentUrl()];
+   if (
+		array_key_exists('module_query',$GLOBALS['_seo_config']) &&
+		array_key_exists('enabled',$GLOBALS['_seo_config']['module_query']) &&
+		$GLOBALS['_seo_config']['module_query']['enabled'] &&
+		!empty($GLOBALS['_seo_content'])
+	) {
+      $commonFunctions = array_key_exists('common_functions',$GLOBALS['_seo_config']['module_query'])? $GLOBALS['_seo_config']['module_query']['common_functions'] : '';
+		if (array_key_exists('functions',$GLOBALS['_seo_config']['module_query']) && array_key_exists(getCurrentUrl(),$GLOBALS['_seo_config']['module_query']['functions'])) {
+			$userFunction = $GLOBALS['_seo_config']['module_query']['functions'][getCurrentUrl()];
+		} else $userFunction = '';
       if(!empty($commonFunctions) || !empty($userFunction)){
 
          // common functions
@@ -135,18 +142,18 @@ function _seo_apply()
    }
 
    // ищем первый h1
-   if(@$GLOBALS['_seo_config']['module_headers_enabled']){
+   if(array_key_exists('module_headers_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_headers_enabled']){
       applyHeaders();
    }
 
 	// формы
-	if(@$GLOBALS['_seo_config']['module_forms_enabled']) {
+	if(array_key_exists('module_forms_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_forms_enabled']) {
 		include_once('modules/forms/functions.php');
 		_s_makeForm();
 	}
 
 	// Хлебные крошки
-	if(@$GLOBALS['_seo_config']['module_breadcrumbs_enabled']) {
+	if(array_key_exists('module_breadcrumbs_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_breadcrumbs_enabled']) {
 		if (strpos($GLOBALS['_seo_content'],'<!--$$'.$GLOBALS['_seo_config']['adminConfig']['breadcrumbs']['tag'].'-->') !== false) {
 			include_once('modules/breadcrumbs/functions.php');
 			_s_makeCrumbs();
@@ -170,12 +177,14 @@ function getCurrentPageInfo($searchNewPage = true, $searchOldPage = true)
    $currentUrl = getCurrentUrl();
 
    if($searchOldPage){
-      $pageInfo = @$GLOBALS['_seo_config']['pages'][$currentUrl];
-      if(!empty($pageInfo)) return $pageInfo;
+		if (array_key_exists('pages',$GLOBALS['_seo_config']) && array_key_exists($currentUrl,$GLOBALS['_seo_config']['pages'])) {
+			$pageInfo = $GLOBALS['_seo_config']['pages'][$currentUrl];
+			if(!empty($pageInfo)) return $pageInfo;
+		}
    }
    if($searchNewPage){
       foreach($GLOBALS['_seo_config']['pages'] as $pageInfo){
-         if(@$pageInfo['newUrl'] == $currentUrl){
+         if(array_key_exists('newUrl',$pageInfo) && $pageInfo['newUrl'] == $currentUrl){
             return $pageInfo;
          }
       }

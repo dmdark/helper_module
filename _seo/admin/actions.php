@@ -4,8 +4,11 @@ require_once dirname(__FILE__) . '/defines.php';
 require_once _SEO_DIRECTORY . 'functions.php';
 
 $GLOBALS['_seo_config'] = include dirname(__FILE__) . '/../config.php';
+if (!isset($HTTP_RAW_POST_DATA)) $HTTP_RAW_POST_DATA = '[]';
+if (!isset($_GET['module'])) $_GET['module'] = false;
+if (!isset($_GET['action'])) $_GET['action'] = false;
 
-if(@$_GET['module'] == 'information_systems'){
+if($_GET['module'] == 'information_systems'){
    if($_GET['action'] == 'get' && $_GET['id']){
       echo php2js(_s_getInformationSystem($_GET['id']));
       exit;
@@ -16,7 +19,7 @@ if(@$_GET['module'] == 'information_systems'){
    }
 }
 
-if(@$_GET['module'] == 'redirects'){
+if($_GET['module'] == 'redirects'){
    if($_GET['action'] == 'add'){
       $postData = trim($HTTP_RAW_POST_DATA);
       if(!empty($postData)){
@@ -37,7 +40,7 @@ if(@$_GET['module'] == 'redirects'){
    exit;
 }
 
-if(@$_GET['module'] == 'error404'){
+if($_GET['module'] == 'error404'){
    if($_GET['action'] == 'get'){
       echo _s_getErrors404();
       exit;
@@ -49,12 +52,12 @@ if(@$_GET['module'] == 'error404'){
    exit;
 }
 
-if(@$_GET['action'] == 'get_items'){
+if($_GET['action'] == 'get_items'){
    $config = config2file(_SEO_DIRECTORY . 'config.ini', false);
    $rememberCache = getRememberCache();
 
    foreach($config as &$info){
-      if(isset($rememberCache[$info['newUrl']])){
+      if(array_key_exists('newUrl',$info) && isset($rememberCache[$info['newUrl']])){
          $info['rememberCache'] = nl2br(print_r($rememberCache[$info['newUrl']], true));
       }
 
@@ -65,7 +68,7 @@ if(@$_GET['action'] == 'get_items'){
    return;
 }
 
-if (@$_GET['module'] == 'breadcrumbs') {
+if ($_GET['module'] == 'breadcrumbs') {
 	$crumbs_dir = _SEO_DIRECTORY.'modules/breadcrumbs/';
 	if ($_GET['action'] == 'get') {
 		echo file_get_contents($crumbs_dir.'breadcrumbs.json');

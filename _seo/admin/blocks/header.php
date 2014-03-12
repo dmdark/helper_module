@@ -4,15 +4,17 @@ session_start();
 require_once _SEO_DIRECTORY . 'functions.php';
 $config = require_once _SEO_DIRECTORY . 'config.php';
 
-if(@!empty($_POST) && $_POST['login'] == $config['adminConfig']['login'] && md5($_POST['password']) == $config['adminConfig']['password']){
+if(
+	!empty($_POST) &&
+	array_key_exists('login',$_POST) && $_POST['login'] == $config['adminConfig']['login'] &&
+	array_key_exists('password',$_POST) && md5($_POST['password']) == $config['adminConfig']['password']){
    $_SESSION['_seo_auth'] = 1;
    header('Location: /_seo/admin/');
    return;
 }
 
 
-?>
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="en" ng-app="application">
 <head>
    <meta charset="utf-8">

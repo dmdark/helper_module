@@ -56,7 +56,7 @@ if (1 == $valid && array_key_exists('emailSettings',$form)) {
 			$mailBody.= '<p><strong>';
 			$mailBody.=  array_key_exists('letter_name',$field)? $field['letter_name']:$field['name'];
 			$mailBody.= ':</strong> ';
-			$mailBody.=  (@$field['tag']=='textarea')? '<br /><pre>'.$_REQUEST[($field['name'])].'</pre>' : $_REQUEST[($field['name'])];
+			$mailBody.=  (array_key_exists('tag',$field['tag']) && $field['tag']=='textarea')? '<br /><pre>'.$_REQUEST[($field['name'])].'</pre>' : $_REQUEST[($field['name'])];
 			$mailBody.= '</p>';
 		}
 	}

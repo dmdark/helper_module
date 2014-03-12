@@ -72,7 +72,8 @@ function config2file($file, $needConvert = true)
       if($needConvert && $GLOBALS['_seo_config']['encoding'] != 'utf-8' && function_exists('iconv')){
          $line = iconv('utf-8', $GLOBALS['_seo_config']['encoding'], $line);
       }
-      @$result[$currentUrl][$currentTag] .= $line;
+		if (isset($result[$currentUrl][$currentTag])) {$result[$currentUrl][$currentTag] .= $line;}
+		else $result[$currentUrl][$currentTag] = $line;
    }
    return $result;
 }
@@ -144,10 +145,7 @@ function addSpecialProperties(&$data)
    $keys = $GLOBALS['_seo_config']['adminConfig']['additionalTags'];
    foreach($keys as $key){
       if(strpos($key, 't_') !== false){
-         $data[$key] = @file_get_contents($dir . $key . '.html');
-         if(empty($data[$key])){
-            $data[$key] = '';
-         }
+			$data[$key] = file_exists($dir . $key . '.html')? file_get_contents($dir . $key . '.html') : '';
       }
    }
 
@@ -156,7 +154,8 @@ function addSpecialProperties(&$data)
 
 function getSpecialProperty($url, $key)
 {
-   return @file_get_contents(getDatabaseDirectoryForUrl($url) . $key . '.html');
+	$filename = getDatabaseDirectoryForUrl($url) . $key . '.html';
+   return file_exists($filename)? file_get_contents($filename) : '';
 }
 
 // redirect functions
@@ -209,9 +208,9 @@ function _s_clear_url($urlStr)
 function _s_getErrors404($asArray = false)
 {
    if($asArray){
-      return file(_SEO_DIRECTORY . 'errors404.ini');
-   } else{
-      return @file_get_contents(_SEO_DIRECTORY . 'errors404.ini');
+      return file_exists(_SEO_DIRECTORY . 'errors404.ini')? file(_SEO_DIRECTORY . 'errors404.ini') : array();
+   } else {
+      return file_exists(_SEO_DIRECTORY . 'errors404.ini')? file_get_contents(_SEO_DIRECTORY . 'errors404.ini') : '';
    }
 }
 
@@ -251,7 +250,7 @@ function _s_deleteInformationSystem($id)
    if($handle = opendir(_SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR)){
       while(false !== ($dir = readdir($handle))){
          if($dir != "." && $dir != ".."){
-            @unlink(_SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . 'is_' . $id . '.json');
+            unlink(_SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . 'is_' . $id . '.json');
          }
       }
       closedir($handle);
@@ -309,7 +308,7 @@ function _s_getInformationSystemUrl($system_url, $item_url)
 function _s_render($file, $data)
 {
    extract($data);
-   $template = _SEO_DIRECTORY . 'templates' . DIRECTORY_SEPARATOR . $file;;
+   $template = _SEO_DIRECTORY . 'templates' . DIRECTORY_SEPARATOR . $file;
    if(file_exists($template)){
       return include($template);
    }
