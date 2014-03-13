@@ -16,7 +16,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
       <label class="label <?php echo bool_to_label_class(test_php2js()); ?>">php2js</label>
       <label class="label <?php echo bool_to_label_class(test_iconv()); ?>">iconv</label>
       <label class="label <?php echo bool_to_label_class(test_preg_match()); ?>">preg_match</label>
-
+      <label class="label <?php echo bool_to_label_class(test_permissions()); ?>">permissions</label>
    </div>
 <?php endif; ?>
 </body>
