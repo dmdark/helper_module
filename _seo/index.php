@@ -7,7 +7,8 @@ initConfig();
 header('Content-Type: text/html; charset=' . $GLOBALS['_seo_config']['encoding']);
 
 if(array_key_exists('module_urls_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_urls_enabled']){
-   // проверяем, может нам пришел старый урл, который мы должны бы заменить. Редиректим!
+
+	// проверяем, может нам пришел старый урл, который мы должны бы заменить. Редиректим!
    $pageInfo = getCurrentPageInfo(false);
    if(!empty($pageInfo['newUrl'])){
 
@@ -51,7 +52,7 @@ if(array_key_exists('module_urls_enabled',$GLOBALS['_seo_config']) && $GLOBALS['
 
    // быть может модуль 404 ошибки?
    $errors404 = _s_getErrors404(true);
-   if(in_array($_SERVER['REQUEST_URI'], $errors404)){
+	if(in_array($_SERVER['REQUEST_URI'], $errors404)){
       header("HTTP/1.0 404 Not Found");
       header("Status: 404 Not Found");
       $page404 = _SEO_DIRECTORY . '404.html';
@@ -304,20 +305,64 @@ function applyInformationSystems()
 {
    $e = $GLOBALS['_seo_config']['encoding'];
    $configSystems = $GLOBALS['_seo_config']['adminConfig']['information_systems'];
-
+	// Свойства задаются так <!--$*ИмяМетки? свойство1=значени &свойство2-->
+	// Список свойств:
+	// - random - отбобразить в случайном порядке
+	// - url='/url1/||/url2/'
+	// - max=N - вывести не более N блоков
+	// - reply=0 - не отображать форму отзывов (для 1 url по умолчанию да, если есть настройка в конфиге)
    if(empty($configSystems)) return;
    foreach($configSystems as $config_item){
+		// Поиск метки <!--$*isName--> или <!--$*isName? property1=55 &property2
       $searchFor = '<!--$*' . $config_item['id'] . '-->';
+		$properties = false;
       $pos = mb_strpos($GLOBALS['_seo_content'], $searchFor, null, $e);
-
+		if(empty($pos)) {
+			$searchFor = '<!--$*' . $config_item['id'] . '?';
+			$properties = true;
+			$pos = mb_strpos($GLOBALS['_seo_content'], $searchFor, null, $e);
+		}
       if(empty($pos)) continue;
 
+		// Получение свойств из метки
+		if ($properties) {
+			$properties = preg_match('/<!--\$\*'.$config_item['id'].'\?(.+)-->/Ui',$GLOBALS['_seo_content'],$matches);
+			if (array_key_exists(1,$matches) && strlen(trim($matches[1]))>1) {
+				$availableProperties = array('url','max','random','reply');
+				$properties = explode('&',trim($matches[1],'& '));
+				// Если получили свойства, получаем их значения
+				if (count($properties)>1 || !empty($properties[0])) {
+					$array = $properties;
+					$properties = array();
+					foreach ($array as $pair) {
+						if (!empty($pair)) {
+							$pair = explode('=',$pair);
+							if (!in_array(trim($pair[0]),$availableProperties)) continue;
+							if (!array_key_exists(1,$pair)) $pair[1] = true;
+							// Если указано значени url, то их в массив
+							if (trim($pair[0]) == 'url') $pair[1] = explode('||',trim($pair[1],' \''));
+							if (trim($pair[0]) == 'reply') {
+								if (trim($pair[1]) == '0') $pair[1] = false;
+							}
+							$properties[trim($pair[0])] = $pair[1];
+						}
+					}
+				}
+			}
+			$properties['show_item'] = false;
+		} else $properties = array();
+		if (!array_key_exists('url',$properties)) {
+			$properties['url'] = array($_SERVER['REQUEST_URI']);
+			// Отображать отдельный элемент, если есть GET запрос
+			$properties['show_item'] = true;
+		}
+		if (!array_key_exists('reply',$properties)) $properties['reply'] = true;
+		if (count($properties['url']) > 1) $properties['reply'] = false;
 
-      $html = _s_renderInformationSystem($config_item, $_SERVER['REQUEST_URI']);
+		$html = _s_renderInformationSystem($config_item, $properties);
 
-      $GLOBALS['_seo_content'] = str_replace($searchFor, $html, $GLOBALS['_seo_content']);
+		$GLOBALS['_seo_content'] = preg_replace('/<!--\$\*'.$config_item['id'].'[-]?.*-->/Ui',$html,$GLOBALS['_seo_content']);
    }
-   // <!--**is_news-->
 }
 
 function initConfig()
