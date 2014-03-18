@@ -38,6 +38,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
                         <tr ng-repeat="item in url.items" ng-click="EditItem(item)" ng-class="{'success': item == editItem}">
                            <td><a ng-href="{{ url.url }}{{ item.url }}" target="_blank">{{ item.title }}</a></td>
                            <td style="text-align: right">
+										<button class="btn btn-sm btn-danger btn-xs" ng-click="changeVisibility(item)"><span title="123" class="glyphicon glyphicon-eye-open" ng-hide="!item.visibility"></span><span class="glyphicon glyphicon-eye-close" ng-hide="item.visibility"></span></button>
                               <button class="btn btn-sm btn-danger btn-xs" ng-click="DeleteItem(url, item)">-</button>
                            </td>
                         </tr>
@@ -66,7 +67,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
                      <label for="<?php echo $field['id']; ?>">
                         <?php echo $field['title']; ?>
                      </label>
-                     <?php if($field['type'] == 'textarea'): ?>
+                     <?php if (array_key_exists('type',$field) && $field['type'] == 'textarea'): ?>
                         <textarea ng-model="editItem.<?php echo $field['id']; ?>" cols="30" rows="5" class="form-control"></textarea>
                      <?php else: ?>
                         <input type="text" ng-model="editItem.<?php echo $field['id']; ?>" class="form-control"/>
