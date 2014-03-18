@@ -97,24 +97,36 @@ $config = array(
 						),
 				),
             'information_systems' => array(
-                  /*array(
+                  array(
                         'id' => 'reviews',
                         'title' => 'Отзывы',
                         'template_item' => 'information_item.php',
                         'template_list' => 'information_items.php',
+                        'template_reply' => 'information_reply.php',
                         'fields' => array(
-                              array(
+                              array( // все, кроме (id, title, type), используется только в отзывах пользователей
                                     'id' => 'title',
                                     'title' => 'Заголовок',
+                                    'validator' => 'notempty,max=100',
+                                    'error' => 'Не более 100 символов',
+                                    'placeholder' => 'Заголовок сообщения',
+                                    'label' => 'Заголовок (до 100 символов)',
+                                    'required' => true,
                               ),
                               array(
                                     'id' => 'text',
                                     'title' => 'Текст',
                                     'type' => 'textarea',
+                                    'label' => 'Текст сообщения',
+                                    'validator' => 'notempty,max=2000',
+                                    'required' => true,
                               ),
                               array(
                                     'id' => 'author',
                                     'title' => 'Автор',
+                                    'validator' => 'notempty,max=2000',
+                                    'label' => 'Ваше имя',
+                                    'required' => true,
                               ),
                         ),
                   ),
@@ -134,7 +146,7 @@ $config = array(
                                     'type' => 'textarea',
                               ),
                         ),
-                  )*/
+                  ),
             ),
             'login' => 'admin',
             'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
