@@ -17,6 +17,9 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
       <label class="label <?php echo bool_to_label_class(test_iconv()); ?>">iconv</label>
       <label class="label <?php echo bool_to_label_class(test_preg_match()); ?>">preg_match</label>
       <label class="label <?php echo bool_to_label_class(test_permissions()); ?>">permissions</label>
+      <label class="label <?php echo bool_to_label_class(test_index()); ?>">Основной модуль</label>
+		<label class="label <?php echo bool_to_label_class(test_redirects()); ?>">301</label>
+		<label class="label <?php echo bool_to_label_class(test_pageNotFound()); ?>">404</label>
    </div>
 <?php endif; ?>
 </body>
