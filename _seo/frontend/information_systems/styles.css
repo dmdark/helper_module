@@ -11,3 +11,30 @@
    font-weight: bold;
    padding-bottom: 2px;
 }
+
+/* Форма отзывов */
+._seo_is_reply {
+	width: 50%;
+	margin: 5px auto;
+}
+._seo_is_reply .header {
+	margin-bottom: 10px;
+}
+._seo_is_reply input, ._seo_is_reply textarea {
+	width: 100%;
+	margin-bottom: 5px;
+}
+._seo_is_reply label {
+	margin-top: 3px;
+	display: block;
+}
+._seo_is_reply .success {
+	color: #052;
+}
+._seo_is_reply .required, ._seo_is_reply .error {
+	color: #800;
+}
+._seo_is_reply .error {
+	margin-top: 0;
+	margin-bottom: 8px;
+}
