@@ -38,6 +38,7 @@ module.controller('InformationSystemsController', function ($scope, $http, $loca
    $scope.AddItemToUrl = function (url){
       url.items.unshift({
          title: 'Новый элемент'
+			,visibility: true
       });
    };
 
@@ -45,6 +46,9 @@ module.controller('InformationSystemsController', function ($scope, $http, $loca
       $scope.editItem = item;
    };
 
+	$scope.changeVisibility = function (element){
+		element.visibility = !element.visibility;
+	};
 
    $scope.DeleteItem = function (url, item){
       for(var i = 0; i < url.items.length; i++){
