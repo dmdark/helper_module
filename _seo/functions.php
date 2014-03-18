@@ -208,7 +208,7 @@ function _s_clear_url($urlStr)
 function _s_getErrors404($asArray = false)
 {
    if($asArray){
-      return file_exists(_SEO_DIRECTORY . 'errors404.ini')? file(_SEO_DIRECTORY . 'errors404.ini') : array();
+      return file_exists(_SEO_DIRECTORY . 'errors404.ini')? file(_SEO_DIRECTORY . 'errors404.ini', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : array();
    } else {
       return file_exists(_SEO_DIRECTORY . 'errors404.ini')? file_get_contents(_SEO_DIRECTORY . 'errors404.ini') : '';
    }
@@ -267,29 +267,57 @@ function _s_saveInformationSystems($id, $urls)
    }
 }
 
-function _s_renderInformationSystem($information_system_config, $url)
+function _s_renderInformationSystem($information_system_config, $properties)
 {
    // избавляемся от добавленных частей, чтобы получить корректный урл
-   $url = preg_replace('/(\?|&)_s=[^&]+/simx', '', $url);
+	$urls = array();
+	foreach ($properties['url'] as $url) {
+		$urls[] = preg_replace('/(\?|&)_s=[^&]+/simx', '', $url);
+	}
 
-   $file = getDatabaseDirectoryForUrl($url) . 'is_' . $information_system_config['id'] . '.json';
+	$itemList = array();
 
-   if(!file_exists($file)) return '';
+	foreach ($urls as $url) {
+		$file = getDatabaseDirectoryForUrl($url) . 'is_' . $information_system_config['id'] . '.json';
+		if(!file_exists($file)) continue;
+		$information_items = json_decode(file_get_contents($file), true);
+		// Очищаем массив от отключенных, добавляем URL к их параметрам
+		$onlyVisibleItems = array();
+		foreach ($information_items['items'] as $item) {
+			if ($item['visibility']) {
+				$item['is_url'] = $url;
+				$onlyVisibleItems[] = $item;
+			}
+		}
+		$information_items['items'] = $onlyVisibleItems;
+		// Проверяем выводить ли 1 элемент, если да, то выводим и ничего больше не делаем
+		if ( $properties['show_item'] && !empty($_GET['_s']) && $information_system_config['template_item'] ) {
+			foreach($information_items['items'] as $item){
+				if($item['url'] == $_GET['_s']){
+					return _s_render($information_system_config['template_item'], array('information_item' => $item, 'information_items' => $information_items, 'config' => $information_system_config));
+				}
+			}
+		}
+		if(empty($information_items) || empty($information_items['items'])) continue;
+		$itemList = array_merge($itemList,$information_items['items']);
+	}
 
-   $information_items = json_decode(file_get_contents($file), true);
-   if(empty($information_items) || empty($information_items['items'])) return '';
+	if (empty($itemList)) return;
 
-   if(!empty($_GET['_s']) && $information_system_config['template_item']){
-      foreach($information_items['items'] as $item){
-         if($item['url'] == $_GET['_s']){
-            return _s_render($information_system_config['template_item'], array('information_item' => $item, 'information_items' => $information_items, 'config' => $information_system_config));
-         }
-      }
+	// Применение Random
+	if (array_key_exists('random',$properties) && $properties['random']) shuffle($itemList);
+	// Применение max
+	if (array_key_exists('max',$properties)) $itemList = array_slice($itemList,0,$properties['max']);
 
-   }
-
+	// Вывод элементов в шаблоне
    if($information_system_config['template_list']){
-      return _s_render($information_system_config['template_list'], array('information_items' => $information_items, 'config' => $information_system_config));
+		$return = _s_render($information_system_config['template_list'], array('items' => $itemList, 'config' => $information_system_config));
+		// Добавление формы отзывов для посетителей
+		if ($properties['reply'] && array_key_exists('template_reply',$information_system_config) ) {
+			$replyTemplate = _SEO_DIRECTORY . 'templates/' . $information_system_config['template_reply'];
+			if (file_exists($replyTemplate)) $return.= include($replyTemplate);
+		}
+      return $return;
    }
 }
 
