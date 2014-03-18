@@ -1,17 +1,17 @@
 <?php
 $html = '<div class="_seo_is_list">';
-foreach($information_items['items'] as $item){
+foreach($items as $item){
    $html .= '<div class="_seo_is_list-listitem">';
 
    $html .= '<div class="_seo_is_list-title">';
    if(!empty($config['template_item'])){
-      $html .= '<a href="' . _s_getInformationSystemUrl($information_items['url'], $item['url']) . '">' . $item['title'] . '</a>';
+      $html .= '<a href="' . _s_getInformationSystemUrl($item['is_url'], $item['url']) . '">' . $item['title'] . '</a>';
    } else{
       $html .= $item['title'];
    }
    $html .= '</div>';
    $html .= '<div>' . $item['text'] . '</div>';
-   $html .= '<div class="_seo_is_list-date">' . $item['date'] . '</div>';
+//   $html .= '<div class="_seo_is_list-date">' . $item['date'] . '</div>';
    $html .= '</div>';
 }
 $html .= '</div>';
