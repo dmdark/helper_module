@@ -1,13 +1,13 @@
 <?php
 // Проверка всех полей формы по параметрам из /_seo/config.php
-// Зависит от:
-// - /_seo/config.php (2 уровня выше)
-// - /_seo/modules/forms/inputvalidator.php (вместе с этим файлом)
+// Должен вызываться из /_seo/modules/formvalidator.php
+// Зависит от (должны быть получены заранее в /_seo/modules/formvalidator.php):
+// - /_seo/config.php
+// - /_seo/modules/inputvalidator.php
 
 if (isset($_REQUEST['form-tag'])) {$formTag = $_REQUEST['form-tag'];}
 else die();
 
-$config = include('../../config.php');
 if (!array_key_exists('forms',$config['adminConfig'])) die('No forms in config file');
 
 // Ищем tag текущей формы
@@ -26,7 +26,6 @@ if (!$form) die('No such form');
 // Проверяем все значения формы
 $valid = 1;
 $json = '';
-include_once('inputvalidator.php');
 foreach ($form['fields'] as $field) {
 	if (array_key_exists('validator',$field)) {
 		if (strlen($field['validator'])>0) {
@@ -97,9 +96,9 @@ if (1 == $valid && array_key_exists('emailSettings',$form)) {
 	
 	// Сохраняем письмо в html
 	$filename = date('Y-m-d--U').'.htm';
-	if (!is_dir('letters-html')) mkdir('letters-html') or die('Нет доступа к записи на диск');
-	// $formTag должен быть получен в formvalidator.php
-	if (!is_dir('letters-html/'.$formTag)) mkdir('letters-html/'.$formTag) or die('Нет доступа к записи на диск');
-	file_put_contents('letters-html/'.$formTag.'/'.$filename,'<!doctype html><html lang="ru"><head><meta charset="UTF-8"><title>Document</title></head><body>'.$mailBody.'</body></html>');
+	$modulePath = dirname(__FILE__).'/';
+	if (!is_dir($modulePath.'letters-html')) mkdir($modulePath.'letters-html') or die('Нет доступа к записи на диск');
+	if (!is_dir($modulePath.'letters-html/'.$formTag)) mkdir($modulePath.'letters-html/'.$formTag) or die('Нет доступа к записи на диск');
+	file_put_contents($modulePath.'letters-html/'.$formTag.'/'.$filename,'<!doctype html><html lang="ru"><head><meta charset="UTF-8"><title>Document</title></head><body>'.$mailBody.'</body></html>');
 
 }
