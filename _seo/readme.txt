@@ -33,7 +33,7 @@ require_once dirname(__FILE__) . '/../_seo/index.php';
 в файл /bitrix/urlrewrite.php в самый верх.
 
 2. Размещаем код
- require_once dirname(__FILE__) . '/_seo/index.php';
+ require_once dirname(__FILE__) . '/../../../../_seo/index.php';
  ob_start();
 
 в /bitrix/modules/main/include/prolog_before.php
