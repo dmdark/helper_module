@@ -260,9 +260,9 @@ function applyUrls()
    }
    foreach($GLOBALS['_seo_config']['pages'] as $oldUrl => $pageInfo){
       if(!empty($pageInfo['newUrl'])){
-         $oldUrlStr = '((' . preg_quote(htmlspecialchars(str_replace('%2F', '/', rawurlencode($oldUrl)))) . ')|(' . preg_quote(htmlspecialchars($oldUrl)) . '))';
-         $GLOBALS['_seo_content'] = preg_replace('!(<a[^<>]+?href=("|\'))(http://)?(' . preg_quote($_SERVER['HTTP_HOST']) . ')?' . $oldUrlStr . '(("|\')([^<>]+?)?>.+?</a>)!simx' . $add_regexp,
-               '$1' . $pageInfo['newUrl'] . '$8', $GLOBALS['_seo_content']);
+			$oldUrlStr = '((' . preg_quote( htmlspecialchars( str_replace('%2F','/',rawurlencode($oldUrl))) ) . ')|(' . preg_replace('#&amp;#', '(?:&amp;|&)', preg_quote(htmlspecialchars($oldUrl)) ) . '))';
+         $GLOBALS['_seo_content'] =
+				preg_replace('!(<a[^<>]+?href=("|\'))(http://)?(' . preg_quote($_SERVER['HTTP_HOST']) . ')?' . $oldUrlStr . '(("|\')([^<>]+?)?>.+?</a>)!simx' . $add_regexp, '$1' . $pageInfo['newUrl'] . '$8', $GLOBALS['_seo_content']);
       }
    }
 
