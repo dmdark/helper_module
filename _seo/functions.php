@@ -199,9 +199,11 @@ function _s_deleteRedirect($source, $dest)
    file_put_contents(_SEO_DIRECTORY . 'redirects.ini', php2js($redirects));
 }
 
-function _s_clear_url($urlStr)
-{
-   return trim(parse_url($urlStr, PHP_URL_PATH) . parse_url($urlStr, PHP_URL_QUERY));
+function _s_clear_url($urlStr) {
+	$path = parse_url($urlStr, PHP_URL_PATH);
+	$query = parse_url($urlStr, PHP_URL_QUERY);
+	if (!empty($query)) return trim($path.'?'.$query);
+	return trim($path);
 }
 
 // 404 errors
