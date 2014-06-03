@@ -1,7 +1,6 @@
 <?php
-if(!function_exists('php2js')){
-   function php2js($a = false)
-   {
+if(!function_exists('php2js')) {
+   function php2js($a = false) {
       if(is_null($a)) return 'null';
       if($a === false) return 'false';
       if($a === true) return 'true';
@@ -152,19 +151,15 @@ function addSpecialProperties(&$data)
    return $data;
 }
 
-function getSpecialProperty($url, $key)
-{
+function getSpecialProperty($url, $key) {
 	$filename = getDatabaseDirectoryForUrl($url) . $key . '.html';
    return file_exists($filename)? file_get_contents($filename) : '';
 }
 
+
 // redirect functions
 
-define('R_DELIM', '===');
-define('R_FILE', _SEO_DIRECTORY . 'redirects.ini');
-
-function _s_addRedirects($postData, $replaceAll = true)
-{
+function _s_addRedirects($postData, $replaceAll = true) {
    $resultArray = _s_getRedirects();
 
    $pairs = explode("\n", $postData);
@@ -181,8 +176,7 @@ function _s_addRedirects($postData, $replaceAll = true)
    file_put_contents(_SEO_DIRECTORY . 'redirects.ini', php2js($resultArray));
 }
 
-function _s_getRedirects()
-{
+function _s_getRedirects() {
    $decoded = json_decode(file_get_contents(_SEO_DIRECTORY . 'redirects.ini'), true);
    return (!empty($decoded)) ? $decoded : array();
 }
