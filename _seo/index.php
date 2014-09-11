@@ -160,6 +160,15 @@ function _seo_apply()
 			_s_makeCrumbs();
 		}
 	}
+
+	// Ключевые слова к хлебным крошкам
+	if(array_key_exists('module_breadcrumbs_kw_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_breadcrumbs_kw_enabled']) {
+		if (strpos($GLOBALS['_seo_content'],'<!--$$crumbskw-->') !== false) {
+			include_once('modules/breadcrumbs/functions.php');
+			_s_applyCrumbsKw();
+		}
+	}
+
 }
 
 

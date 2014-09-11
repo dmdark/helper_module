@@ -18,6 +18,7 @@ $config = array(
       'module_label_replacement' => 1,
       'module_forms_enabled' => 1,
       'module_breadcrumbs_enabled' => 1,
+      'module_breadcrumbs_kw_enabled' => 1,
       'adminConfig' => array(
             'additionalTags' => array(
                   'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_

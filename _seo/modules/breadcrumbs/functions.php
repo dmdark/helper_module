@@ -104,3 +104,168 @@ function _s_CrumbsGetRelations($array,$parent) {
 	}
 	return $outputArray;
 }
+
+
+// Замена хлебных крошек
+function _s_applyCrumbsKw() {
+
+	$pageInfo = getCurrentPageInfo();
+	$crumbsTagStart = '<!--$$crumbskw-->';
+	$crumbsTagEnd = '<!--/$$crumbskw-->';
+	if (empty($pageInfo['crumbskw'])) return _s_crumbsKwReplace(false);
+
+	preg_match('/'.preg_quote($crumbsTagStart,'/').'(.*?)'.preg_quote($crumbsTagEnd,'/').'/ms',$GLOBALS['_seo_content'],$matches);
+	if (!array_key_exists(1,$matches) || empty($matches[1])) return _s_crumbsKwReplace(false);
+
+	// Исходный блок
+	$sourceBlock = $matches[1];
+
+	// Шаблоны: общий, одной родительской ссылки, текущего элемента
+	$tplFolder = dirname(__FILE__).'/../../templates/breadcrumbs/';
+	$tplContainer = file_get_contents($tplFolder.'container.html');
+	$tplParent = file_get_contents($tplFolder.'parents.html');
+	$tplCurrent = file_get_contents($tplFolder.'item.html');
+
+	// Массив используемых плейсхолдеров (подготовленный для регулярок)
+	$phArray = array('{{items}}','{{link}}','{{title}}','{{text}}');
+	$phArray = array_map('preg_quote',$phArray);
+
+	// Очищаем исходный блок и шаблоны от переводов строк
+	$sourceBlock = _s_crumbsKwClearNl($sourceBlock);
+	$tplContainer = _s_crumbsKwClearNl($tplContainer);
+	$tplParent = _s_crumbsKwClearNl($tplParent);
+	$tplCurrent = _s_crumbsKwClearNl($tplCurrent);
+
+	// Массив, содержащий всю основную информацию
+	$crumbs = array(
+		'oldContent' => array(),
+		'inWork' => array(),
+		'items' => array(),
+		'current' => array(),
+	);
+
+	// Получаем содержимое контейнера (если его нет, то останавливаемся)
+	$containerText = _s_crumbsKwGetItemInfo($sourceBlock,$tplContainer,array('items'=>false),true);
+	if (!$containerText['items']) {
+		return _s_crumbsKwReplace(false);
+	}
+	$crumbs['oldContent']['items'] = $containerText['items'];
+
+	// Получаем родительские элементы
+	$parentPattern = '/('.str_replace($phArray,'.*?',preg_quote($tplParent,'/')).')/';
+	preg_match_all($parentPattern,$crumbs['oldContent']['items'],$matches);
+	if (is_array($matches) && array_key_exists(1,$matches) && is_array($matches[1])) {
+		$crumbs['inWork']['parents'] = array();
+		foreach ($matches[1] as $parent) {
+			$crumbs['inWork']['parents'][] = $parent;
+			$crumbs['oldContent']['items'] = str_replace($parent,'',$crumbs['oldContent']['items']);
+		}
+	}
+	if (is_array($crumbs['inWork']['parents'])) {
+		foreach ($crumbs['inWork']['parents'] as $value) {
+			$crumbs['items'][] = _s_crumbsKwGetItemInfo($value,$tplParent);
+		}
+	}
+	unset($matches);
+
+	// Получаем текущий элемент
+	$currentPattern = '/('.str_replace($phArray,'.*?',preg_quote($tplCurrent,'/')).')/';
+	preg_match($currentPattern,$crumbs['oldContent']['items'],$matches);
+	// Если не получаем текущий, останавливаемся
+	if (!is_array($matches) || !array_key_exists(1,$matches)) {
+		return _s_crumbsKwReplace(false);
+	}
+	// Если текущий получили пустым, для {{text}} добавляем жадность
+	if (empty($matches[1])) {
+		$currentPattern = str_replace(preg_quote('{{text}}'),'.*',preg_quote($tplCurrent,'/'));
+		$currentPattern = '/('.str_replace($phArray,'.*?',$currentPattern).')/';
+		preg_match($currentPattern,$crumbs['oldContent']['items'],$matches);
+	}
+	// Записываем старое содержимое хлебной крошки в $crumbs['oldContent']['current']
+	$crumbs['oldContent']['current'] = trim($matches[1]);
+	unset($matches);
+	// Информация о текущей странице $crumbs['current'] - массив
+	$crumbs['current'] = _s_crumbsKwGetItemInfo($crumbs['oldContent']['current'],$tplCurrent,false,array('text'=>true));
+
+	$crumbs['current']['text'] = _s_crumbsGetNewText($pageInfo['crumbskw'],$crumbs['current']['text']);
+
+
+	// Собираем новый блок
+	$result = '';
+	foreach ($crumbs['items'] as $itemInfo) {
+		$result.= _s_crumbsKwPlaceItemInfo($itemInfo,$tplParent).' ';
+	}
+	$result.= _s_crumbsKwPlaceItemInfo($crumbs['current'],$tplCurrent);
+	$result = _s_crumbsKwPlaceItemInfo(array('items'=>$result),$tplContainer);
+
+	return _s_crumbsKwReplace($result);
+}
+// Новые строки и множественные пробелы в 1 пробел
+function _s_crumbsKwClearNl($text) {
+	$text = str_replace(array("\n","\r","\t"),' ',$text);
+	return trim(preg_replace('/\s+/',' ',$text));
+}
+// Получение информации из строки по шаблону с элементами {{link}} и пр.
+function _s_crumbsKwGetItemInfo($string,$tpl,$info=false,$greed=false) {
+	if (!$info) {
+		$info = array(
+			'link' => false,
+			'title' => false,
+			'text' => false,
+		);
+	}
+	$tpl = preg_quote($tpl,'/');
+	foreach ($info as $key => $value) {
+		if (is_array($greed) && array_key_exists($key,$greed) && $greed[$key]) {
+			$replacement = '(.*)';
+		} elseif ($greed) {
+			$replacement = '(.*)';
+		} else $replacement = '(.*?)';
+		$pattern = str_replace(preg_quote('{{'.$key.'}}'),$replacement,$tpl);
+		$pattern = preg_replace('/'.preg_quote('\{\{').'.*?'.preg_quote('\}\}').'/','.*?',$pattern);
+		preg_match('/'.$pattern.'/',$string,$matches);
+		if (array_key_exists(1,$matches)) $info[$key] = $matches[1];
+	}
+	return $info;
+}
+// Запись значений вместо плейсхолдеров
+function _s_crumbsKwPlaceItemInfo($array,$tpl) {
+	foreach ($array as $key => $value) {
+		if (!$value) $value = '';
+		$tpl = str_replace('{{'.$key.'}}',$value,$tpl);
+	}
+	return $tpl;
+}
+// Получение нового текста из шаблона
+function _s_crumbsGetNewText($pattern,$oldString) {
+	preg_match_all('/\[(.*?)\]/',$pattern,$matches);
+	if (array_key_exists(1,$matches) && is_array($matches[1])) {
+		foreach ($matches[1] as $words) {
+			$words = explode('|',$words);
+			shuffle($words);
+			$pattern = preg_replace('/\[.*?\]/',$words[1],$pattern,1);
+		}
+	}
+	$newString = str_replace('{T}',$oldString,$pattern);
+	// Замена {t} на текст крошки в нижнем регистре
+	$encoding = $GLOBALS['_seo_config']['encoding'];
+	// 1-й символ в нижний регистр
+	$strLen = mb_strlen($oldString,$encoding);
+	$firstChar = mb_substr($oldString,0,1,$encoding);
+	$then = mb_substr($oldString,1,$strLen-1,$encoding);
+	$oldString = mb_strtolower($firstChar, $encoding) . $then;
+	$newString = str_replace('{t}',$oldString,$newString);
+	return $newString;
+}
+// Замена содержимого хлебных крошек
+function _s_crumbsKwReplace($newContent) {
+	$crumbsTagStart = '<!--$$crumbskw-->';
+	$crumbsTagEnd = '<!--/$$crumbskw-->';
+	// Если ничего не надо применять просто удаляем теги
+	if (!$newContent) {
+		$GLOBALS['_seo_content'] = str_replace(array($crumbsTagStart,$crumbsTagEnd),'',$GLOBALS['_seo_content']);
+		return false;
+	}
+	$GLOBALS['_seo_content'] = preg_replace('/'.preg_quote($crumbsTagStart,'/').'(.*?)'.preg_quote($crumbsTagEnd,'/').'/ms',$newContent,$GLOBALS['_seo_content']);
+	return true;
+}
