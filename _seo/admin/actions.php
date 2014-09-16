@@ -53,19 +53,19 @@ if($_GET['module'] == 'error404'){
 }
 
 if($_GET['action'] == 'get_items'){
-   $config = config2file(_SEO_DIRECTORY . 'config.ini', false);
-   $rememberCache = getRememberCache();
+	$config = config2file(_SEO_DIRECTORY . 'config.ini', false);
+	$rememberCache = getRememberCache();
 
-   foreach($config as &$info){
-      if(array_key_exists('newUrl',$info) && isset($rememberCache[$info['newUrl']])){
-         $info['rememberCache'] = nl2br(print_r($rememberCache[$info['newUrl']], true));
-      }
+	foreach($config as $key=>$info){
+		if(array_key_exists('newUrl',$info) && isset($rememberCache[$info['newUrl']])){
+			$info['rememberCache'] = nl2br(print_r($rememberCache[$info['newUrl']], true));
+			$config[$key]['rememberCache'] = $info['rememberCache'];
+		}
+		$specialData = addSpecialProperties($info);
+	}
 
-      $specialData = addSpecialProperties($info);
-   }
-
-   echo php2js(array_values($config));
-   return;
+	echo php2js(array_values($config));
+	return;
 }
 
 if ($_GET['module'] == 'breadcrumbs') {
@@ -123,21 +123,19 @@ if ($_GET['module'] == 'breadcrumbs') {
 
 $postData = json_decode($HTTP_RAW_POST_DATA, true);
 if(!empty($postData)){
-   $configData = '';
-   $i = 0;
-
-   foreach($postData as $data){
-      if(empty($data['url'])) continue;
-
-      // сохраняем особые типы данных
-      saveSpecialData($data);
-
-      if($i++ > 0){
-         $configData .= "===\n";
-      }
-      $configData .= item2config($data);
-   }
-   if(!empty($configData)){
-      file_put_contents(_SEO_DIRECTORY . 'config.ini', $configData);
-   }
+	$configData = '';
+	$i = 0;
+	foreach($postData as $data){
+		$data = (array) $data;
+		if(empty($data['url'])) continue;
+		// сохраняем особые типы данных
+		$data = saveSpecialData($data);
+		if($i++ > 0){
+			$configData .= "===\n";
+		}
+		$configData .= item2config($data);
+	}
+	if(!empty($configData)){
+		file_put_contents(_SEO_DIRECTORY . 'config.ini', $configData);
+	}
 }

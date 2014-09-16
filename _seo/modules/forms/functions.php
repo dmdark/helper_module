@@ -55,7 +55,7 @@ function _s_makeForm() {
 		$formHTML.= '<script src="/_seo/frontend/js/form_validator.js"></script><script>_seoInitializeJQuery(function($) { $("#' . $form['tag'] . '").formValidator(); }); </script>';
 
 		// Заменяем метку на форму
-		$GLOBALS['_seo_content'] = preg_replace('/<!--\$\$'.$form['tag'].'-->/i',$formHTML,$GLOBALS['_seo_content'],(-1),$count);
+		$GLOBALS['_seo_content'] = preg_replace('/<!--\$\$'.$form['tag'].'-->/i',$formHTML,$GLOBALS['_seo_content'],(-1));
 
 	}
 

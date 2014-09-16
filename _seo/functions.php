@@ -1,53 +1,98 @@
 <?php
 if(!function_exists('php2js')) {
-   function php2js($a = false) {
-      if(is_null($a)) return 'null';
-      if($a === false) return 'false';
-      if($a === true) return 'true';
-
-      if(is_scalar($a)){
-         if(is_float($a)){
-            // Always use "." for floats.
-            $a = str_replace(",", ".", strval($a));
-         }
-
-         // All scalars are converted to strings to avoid indeterminism.
-         // PHP's "1" and 1 are equal for all PHP operators, but
-         // JS's "1" and 1 are not. So if we pass "1" or 1 from the PHP backend,
-         // we should get the same result in the JS frontend (string).
-         // Character replacements for JSON.
-         static $jsonReplaces = array(array("\\", "/", "\n", "\t", "\r", "\b", "\f", '"'),
-               array('\\\\', '\\/', '\\n', '\\t', '\\r', '\\b', '\\f', '\"'));
-         return '"' . str_replace($jsonReplaces[0], $jsonReplaces[1], $a) . '"';
-      }
-      $isList = true;
-      for($i = 0, reset($a); $i < count($a); $i++, next($a)){
-         if(key($a) !== $i){
-            $isList = false;
-            break;
-         }
-      }
-      $result = array();
-      if($isList){
-         foreach($a as $v) $result[] = php2js($v);
-         return '[ ' . join(', ', $result) . ' ]';
-      } else{
-         foreach($a as $k => $v) $result[] = php2js($k) . ': ' . php2js($v);
-         return '{ ' . join(', ', $result) . ' }';
-      }
-   }
+	function php2js($a = false) {
+		if(is_null($a)) return 'null';
+		if($a === false) return 'false';
+		if($a === true) return 'true';
+		if(is_scalar($a)) {
+			if(is_float($a)){
+				// Always use "." for floats.
+				$a = str_replace(",", ".", strval($a));
+			}
+			// All scalars are converted to strings to avoid indeterminism.
+			// PHP's "1" and 1 are equal for all PHP operators, but
+			// JS's "1" and 1 are not. So if we pass "1" or 1 from the PHP backend,
+			// we should get the same result in the JS frontend (string).
+			// Character replacements for JSON.
+			static $jsonReplaces = array(
+				array("\\", "/", "\n", "\t", "\r", "\b", "\f", '"'),
+				array('\\\\', '\\/', '\\n', '\\t', '\\r', '\\b', '\\f', '\"')
+			);
+			return '"' . str_replace($jsonReplaces[0], $jsonReplaces[1], $a) . '"';
+		}
+		$isList = true;
+		for($i = 0, reset($a); $i < count($a); $i++, next($a)){
+			if(key($a) !== $i){
+				$isList = false;
+				break;
+			}
+		}
+		$result = array();
+		if($isList){
+			foreach($a as $v) $result[] = php2js($v);
+			return '[ ' . join(', ', $result) . ' ]';
+		} else{
+			foreach($a as $k => $v) $result[] = php2js($k) . ': ' . php2js($v);
+			return '{ ' . join(', ', $result) . ' }';
+		}
+	}
 }
 if(!function_exists('json_decode')){
-   require_once _SEO_DIRECTORY . '/libs/JSON/JSON.php';
+	require_once _SEO_DIRECTORY . '/libs/JSON/JSON.php';
+	function json_decode($arg) {
+		global $_s_services_json;
+		if(!isset($_s_services_json)){
+			$_s_services_json = new Services_JSON();
+		}
+		return $_s_services_json->decode($arg);
+	}
+}
+if(!function_exists('json_encode')){
+	require_once _SEO_DIRECTORY . '/libs/JSON/JSON.php';
+	function json_encode($arg) {
+		global $_s_services_json;
+		if(!isset($_s_services_json)){
+			$_s_services_json = new Services_JSON();
+		}
+		return $_s_services_json->encode($arg);
+	}
+}
 
-   function json_decode($arg)
-   {
-      global $_s_services_json;
-      if(!isset($_s_services_json)){
-         $_s_services_json = new Services_JSON();
-      }
-      return $_s_services_json->decode($arg);
-   }
+if(!function_exists('file_put_contents')) {
+	function file_put_contents($fileName,$content) {
+		$handle = fopen($fileName,"w");
+		$writeResult = fwrite($handle,$content);
+		fclose($handle);
+		return $writeResult;
+	};
+}
+if(!function_exists('get_headers')) {
+	function get_headers($url,$format=0) {
+		$url = parse_url($url);
+		$end = "\r\n\r\n";
+		$fp = fsockopen($url['host'], (empty($url['port'])? 80 : $url['port']), $errno, $errstr, 30);
+		if($fp) {
+			$out = "GET / HTTP/1.1\r\n";
+			$out.= "Host:  ".$url['host']."\r\n";
+			$out.= "Connection: Close\r\n\r\n";
+			$var = '';
+			fwrite($fp, $out);
+			while (!feof($fp)) {
+				$var.=fgets($fp, 1280);
+				if(strpos($var,$end)) break;
+			}
+			fclose($fp);
+			$var = preg_replace("/\r\n\r\n.*\$/",'',$var);
+			$var = explode("\r\n",$var);
+			$v = array();
+			if($format) {
+				foreach($var  as $i) {
+					if(preg_match('/^([a-zA-Z -]+):  +(.*)$/',$i,$parts)) $v[$parts[1]] = $parts[2];
+				}
+			}
+			return $v;
+		} else return false;
+	}
 }
 
 function config2file($file, $needConvert = true)
@@ -115,26 +160,25 @@ function writeRememberCache($cache)
 }
 
 // database for special items
-function getDatabaseDirectoryForUrl($url)
-{
-   $dirName = rawurlencode($url);
-   $dir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR . $dirName . DIRECTORY_SEPARATOR;
-   if(!is_dir($dir)){
-      mkdir($dir, 0777, true);
-   }
-   return $dir;
+function getDatabaseDirectoryForUrl($url) {
+	$dirName = rawurlencode($url);
+	$dbDir = dirname(__FILE__) . DIRECTORY_SEPARATOR . 'db' . DIRECTORY_SEPARATOR;
+	if (!is_dir($dbDir)) mkdir($dbDir,0777);
+	$dir = $dbDir . $dirName . DIRECTORY_SEPARATOR;
+	if (!is_dir($dir)) mkdir($dir,0777);
+	return $dir;
 }
 
-function saveSpecialData(&$data)
-{
-   $dir = getDatabaseDirectoryForUrl($data['url']);
-   foreach($data as $key => $value){
-      if(strpos($key, 't_') !== false){
-         $propertyFile = $dir . $key . '.html';
-         file_put_contents($propertyFile, $value);
-         unset($data[$key]);
-      }
-   }
+function saveSpecialData($data) {
+	$dir = getDatabaseDirectoryForUrl($data['url']);
+	foreach($data as $key => $value){
+		if(strpos($key, 't_') !== false){
+			$propertyFile = $dir . $key . '.html';
+			file_put_contents($propertyFile, $value);
+			unset($data[$key]);
+		}
+	}
+	return $data;
 }
 
 function addSpecialProperties(&$data)
@@ -194,8 +238,9 @@ function _s_deleteRedirect($source, $dest)
 }
 
 function _s_clear_url($urlStr) {
-	$path = parse_url($urlStr, PHP_URL_PATH);
-	$query = parse_url($urlStr, PHP_URL_QUERY);
+	$urlInfo = parse_url($urlStr);
+	$path = $urlInfo['path'];
+	$query = $urlInfo['query'];
 	if (!empty($query)) return trim($path.'?'.$query);
 	return trim($path);
 }
@@ -298,7 +343,7 @@ function _s_renderInformationSystem($information_system_config, $properties)
 		$itemList = array_merge($itemList,$information_items['items']);
 	}
 
-	if (empty($itemList)) return;
+	if (empty($itemList)) return '';
 
 	// Применение Random
 	if (array_key_exists('random',$properties) && $properties['random']) shuffle($itemList);
@@ -315,6 +360,7 @@ function _s_renderInformationSystem($information_system_config, $properties)
 		}
       return $return;
    }
+	return '';
 }
 
 function _s_getInformationSystemUrl($system_url, $item_url)
@@ -336,4 +382,5 @@ function _s_render($file, $data)
    if(file_exists($template)){
       return include($template);
    }
+	return '';
 }

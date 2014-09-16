@@ -201,64 +201,53 @@ function getCurrentPageInfo($searchNewPage = true, $searchOldPage = true)
    }
 }
 
-function applyMeta()
-{
-   try{
-      $pageInfo = getCurrentPageInfo();
-      // $GLOBALS['_seo_content'] .= '<pre>'.getCurrentUrl().print_r($pageInfo, true);
+function applyMeta() {
+	$pageInfo = getCurrentPageInfo();
+	// $GLOBALS['_seo_content'] .= '<pre>'.getCurrentUrl().print_r($pageInfo, true);
 
-      $add_regexp = '';
-      if($GLOBALS['_seo_config']['encoding'] == 'utf-8'){
-         $add_regexp = 'u';
-      }
-      if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
-         $headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
-         $headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
-         $headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart);
-         $closeHeader = mb_strpos($headHtml, '>');
-         $headHtml = mb_substr($headHtml, $closeHeader + 1);
+	$add_regexp = '';
+	if($GLOBALS['_seo_config']['encoding'] == 'utf-8') {
+		$add_regexp = 'u';
+	}
+	if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
+		$headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
+		$headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
+		$headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart);
+		$closeHeader = mb_strpos($headHtml, '>');
+		$headHtml = mb_substr($headHtml, $closeHeader + 1);
 
-         if(!empty($pageInfo['title'])){
-            $headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
-         }
-         if(!empty($pageInfo['description'])){
-            if(preg_match('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx', $headHtml)){
-               $headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
-            } else{
-               $headHtml .= '<meta name="description" content="' . $pageInfo['description'] . '" />' . "\n";
-            }
-         }
-         if(!empty($pageInfo['keywords'])){
-            if(preg_match('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx', $headHtml)){
-               $headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
-            } else{
-               $headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
-            }
-         }
-         /*$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader) . $headHtml . (mb_substr($GLOBALS['_seo_content'], $headEnd + 7));*/
-         // $GLOBALS['_seo_content'] = substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader + 1) . $headHtml . (substr($GLOBALS['_seo_content'], $headEnd));
-         $GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%simx' . $add_regexp, '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
-      }
-   } catch (Exception $e){
-      echo '<!-- Seo module error: ' . $e->getTrace() . '-->';
-   }
+		if(!empty($pageInfo['title'])){
+			$headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
+		}
+		if(!empty($pageInfo['description'])) {
+			if(preg_match('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx', $headHtml)) {
+				$headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
+			} else {
+				$headHtml .= '<meta name="description" content="' . $pageInfo['description'] . '" />' . "\n";
+			}
+		}
+		if(!empty($pageInfo['keywords'])) {
+			if(preg_match('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx', $headHtml)){
+				$headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
+			} else{
+				$headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
+			}
+		}
+		/*$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader) . $headHtml . (mb_substr($GLOBALS['_seo_content'], $headEnd + 7));*/
+		// $GLOBALS['_seo_content'] = substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader + 1) . $headHtml . (substr($GLOBALS['_seo_content'], $headEnd));
+		$GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%simx' . $add_regexp, '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
+	}
 }
 
-function applyHeaders()
-{
-   try{
-      $pageInfo = getCurrentPageInfo();
-      if(!empty($pageInfo['h1']) && function_exists('mb_strpos')){
-         $h1Start = mb_strpos($GLOBALS['_seo_content'], '<h1');
-         $h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>');
-         $h1Html = mb_substr($GLOBALS['_seo_content'], $h1Start, $h1End - $h1Start + mb_strlen('</h1>'));
-         $h1StartTagEnd = mb_strpos($h1Html, '>');
-         $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End);
-      }
-
-   } catch (Exception $e){
-      echo '<!-- Seo module error: ' . $e->getTrace() . '-->';
-   }
+function applyHeaders() {
+	$pageInfo = getCurrentPageInfo();
+	if(!empty($pageInfo['h1']) && function_exists('mb_strpos')) {
+		$h1Start = mb_strpos($GLOBALS['_seo_content'], '<h1');
+		$h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>');
+		$h1Html = mb_substr($GLOBALS['_seo_content'], $h1Start, $h1End - $h1Start + mb_strlen('</h1>'));
+		$h1StartTagEnd = mb_strpos($h1Html, '>');
+		$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End);
+	}
 }
 
 function applyUrls()
