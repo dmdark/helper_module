@@ -1,28 +1,30 @@
 <?php
 $config = array(
-      'encoding' => 'utf-8',
+		'encoding' => 'utf-8',
 
-      'module_meta_enabled' => 1,
-      'module_urls_enabled' => 1,
-      'module_headers_enabled' => 1,
-      'module_query' => array(
-            'enabled' => 0,
-            'common_functions' => array(
-                  '_setH1'
-            ),
-            'functions' => array(
-                  '/' => 'function_main',
-                  '/contacts/' => 'function_contacts',
-            )
-      ),
-      'module_label_replacement' => 1,
-      'module_forms_enabled' => 1,
-      'module_breadcrumbs_enabled' => 1,
-      'module_breadcrumbs_kw_enabled' => 1,
-      'adminConfig' => array(
-            'additionalTags' => array(
-                  'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_
-            ),
+		'module_meta_enabled' => 1,
+		'module_urls_enabled' => 1,
+		'module_headers_enabled' => 1,
+		'module_query' => array(
+				'enabled' => 0,
+				'common_functions' => array(
+						'_setH1'
+				),
+				'functions' => array(
+						'/' => 'function_main',
+						'/contacts/' => 'function_contacts',
+				)
+		),
+		'module_label_replacement' => 1,
+		'module_forms_enabled' => 1,
+		'module_breadcrumbs_enabled' => 1,
+		'module_breadcrumbs_kw_enabled' => 1,
+		// Удаление рекламных get параметров
+		'module_get_remove' => array('utm_source','utm_medium','utm_campaign','utm_term','utm_content','_openstat'),
+		'adminConfig' => array(
+				'additionalTags' => array(
+						'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_
+				),
 				'breadcrumbs' => array(
 					'tag' => 'crumbs', // тег для замены (<!--$$tag-->)
 					'friendly_urls' => true, // используется ли ЧПУ (если нет, то крошки формируются только для внесенных в базу значений)
@@ -97,62 +99,62 @@ $config = array(
 							),
 						),
 				),
-            'information_systems' => array(
-                  array(
-                        'id' => 'reviews',
-                        'title' => 'Отзывы',
-                        'template_item' => 'information_item.php',
-                        'template_list' => 'information_items.php',
-                        'template_reply' => 'information_reply.php',
-                        'fields' => array(
-                              array( // все, кроме (id, title, type), используется только в отзывах пользователей
-                                    'id' => 'title',
-                                    'title' => 'Заголовок',
-                                    'validator' => 'notempty,max=100',
-                                    'error' => 'Не более 100 символов',
-                                    'placeholder' => 'Заголовок сообщения',
-                                    'label' => 'Заголовок (до 100 символов)',
-                                    'required' => true,
-                              ),
-                              array(
-                                    'id' => 'text',
-                                    'title' => 'Текст',
-                                    'type' => 'textarea',
-                                    'label' => 'Текст сообщения',
-                                    'validator' => 'notempty,max=2000',
-                                    'required' => true,
-                              ),
-                              array(
-                                    'id' => 'author',
-                                    'title' => 'Автор',
-                                    'validator' => 'notempty,max=2000',
-                                    'label' => 'Ваше имя',
-                                    'required' => true,
-                              ),
-                        ),
-                  ),
-                  array(
-                        'id' => 'news',
-                        'title' => 'Новости',
-                        'template_item' => 'information_item.php',
-                        'template_list' => 'information_items.php',
-                        'fields' => array(
-                              array(
-                                    'id' => 'title',
-                                    'title' => 'Заголовок',
-                              ),
-                              array(
-                                    'id' => 'text',
-                                    'title' => 'Текст',
-                                    'type' => 'textarea',
-                              ),
-                        ),
-                  ),
-            ),
-            'login' => 'admin',
-            'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
-      ),
-      'rememberMode' => 1
+				'information_systems' => array(
+						array(
+								'id' => 'reviews',
+								'title' => 'Отзывы',
+								'template_item' => 'information_item.php',
+								'template_list' => 'information_items.php',
+								'template_reply' => 'information_reply.php',
+								'fields' => array(
+										array( // все, кроме (id, title, type), используется только в отзывах пользователей
+												'id' => 'title',
+												'title' => 'Заголовок',
+												'validator' => 'notempty,max=100',
+												'error' => 'Не более 100 символов',
+												'placeholder' => 'Заголовок сообщения',
+												'label' => 'Заголовок (до 100 символов)',
+												'required' => true,
+										),
+										array(
+												'id' => 'text',
+												'title' => 'Текст',
+												'type' => 'textarea',
+												'label' => 'Текст сообщения',
+												'validator' => 'notempty,max=2000',
+												'required' => true,
+										),
+										array(
+												'id' => 'author',
+												'title' => 'Автор',
+												'validator' => 'notempty,max=2000',
+												'label' => 'Ваше имя',
+												'required' => true,
+										),
+								),
+						),
+						array(
+								'id' => 'news',
+								'title' => 'Новости',
+								'template_item' => 'information_item.php',
+								'template_list' => 'information_items.php',
+								'fields' => array(
+										array(
+												'id' => 'title',
+												'title' => 'Заголовок',
+										),
+										array(
+												'id' => 'text',
+												'title' => 'Текст',
+												'type' => 'textarea',
+										),
+								),
+						),
+				),
+				'login' => 'admin',
+				'password' => '9beff0a36668837f7e6f3c4579838e22', // md5, можно сгенерить на http://md5x.ru/
+		),
+		'rememberMode' => 1
 );
 
 /*
@@ -161,16 +163,16 @@ $config = array(
 $pageInfo - информация о текущей странице из config.ini в виде массива.
  */
 if(!function_exists('_setH1')){
-   function _setH1($pageInfo)
-   {
-      // $GLOBALS['_seo_content'] = str_replace('ул. Рябиновая 45', 'ул. Рябиновая 46', $GLOBALS['_seo_content']);
-   }
+	function _setH1($pageInfo)
+	{
+		// $GLOBALS['_seo_content'] = str_replace('ул. Рябиновая 45', 'ул. Рябиновая 46', $GLOBALS['_seo_content']);
+	}
 }
 
 if(!function_exists('function_main')){
-   function function_main($pageInfo)
-   {
+	function function_main($pageInfo)
+	{
 
-   }
+	}
 }
 return $config;

@@ -176,10 +176,16 @@ function _seo_apply()
 
 function getCurrentUrl()
 {
-   if(!defined('_seo_request_uri')){
-      define('_seo_request_uri', html_entity_decode($_SERVER['REQUEST_URI']));
-   }
-   return _seo_request_uri;
+	if(!defined('_seo_request_uri')){
+		// Удаляем указанные в конфиге гет параметры
+		if (array_key_exists('module_get_remove', $GLOBALS['_seo_config']) && !empty($GLOBALS['_seo_config']['module_get_remove'])) {
+			foreach ($GLOBALS['_seo_config']['module_get_remove'] as $removedGet) {
+				$_SERVER['REQUEST_URI'] = preg_replace('/([?&])'.$removedGet.'(?:=[^&]*)?/i','',$_SERVER['REQUEST_URI']);
+			}
+		}
+		define('_seo_request_uri', html_entity_decode($_SERVER['REQUEST_URI']));
+	}
+	return _seo_request_uri;
 }
 
 function getCurrentPageInfo($searchNewPage = true, $searchOldPage = true)
