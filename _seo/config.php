@@ -20,7 +20,7 @@ $config = array(
 		'module_breadcrumbs_enabled' => 1,
 		'module_breadcrumbs_kw_enabled' => 1,
 		// Удаление рекламных get параметров
-		'module_get_remove' => array('utm_source','utm_medium','utm_campaign','utm_term','utm_content','_openstat'),
+		'module_get_remove' => array('utm_source','utm_medium','utm_campaign','utm_term','utm_content','utm_expid','utm_referrer','_openstat','yclid'),
 		'adminConfig' => array(
 				'additionalTags' => array(
 						'h1', 't_1', //'t_2', // для textarea переменная должна начинаться с префикса t_
