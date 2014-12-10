@@ -70,6 +70,13 @@ class _SeoHttpOutputBuffer extends HTTPOutputBuffer {
 }
 $buffer = OutputBuffer::current('_SeoHttpOutputBuffer');
 
+=== Особенности Drupal ===
+Требуется отключить кэш страниц и меню админа
+Модуль подключается в index.php с условием:
+if (!strpos($_SERVER['REQUEST_URI'], 'admin') && !strpos($_SERVER['REQUEST_URI'], 'image_captcha')) {
+	require_once dirname(__FILE__) . '/_seo/index.php';
+	ob_start("_seo_ob_callback");
+}
 
 
 
