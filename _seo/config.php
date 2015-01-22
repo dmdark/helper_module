@@ -2,6 +2,19 @@
 $config = array(
 		'encoding' => 'utf-8',
 
+		'dataInfo' => array(
+				'type' => 'file', // mysql/file
+				// Требуется только для type == mysql
+				// Для создания таблиц прописать конфигурацию БД и запустить тестирование модуля
+				'mysql_config' => array(
+						'host' => 'localhost',
+						'user' => 'root',
+						'password' => '',
+						'db_name' => 'seo_test',
+						'prefix' => '_seo_',
+				),
+		),
+
 		'module_meta_enabled' => 1,
 		'module_urls_enabled' => 1,
 		'module_headers_enabled' => 1,

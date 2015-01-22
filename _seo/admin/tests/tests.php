@@ -81,6 +81,7 @@ function test_index() {
 				)
 			);
 			if ( !test_redirects($redirects) ) return false;
+			echo 'RedirectsOK ';
 		}
 		$pageContent = file_get_contents('http://' . $_SERVER['SERVER_NAME'] . $link['url']);
 		// Контент некоторых следующих проверок должен четко соответствовать указанному в 'index.php', т.к. regexp здесь не используется
@@ -88,23 +89,37 @@ function test_index() {
 		if (array_key_exists('module_meta_enabled',$config) && $config['module_meta_enabled']) {
 			// Title
 			if (array_key_exists('title',$link) && !empty($link['title'])) {
-				if (!strpos($pageContent,'<title>'.$link['title'].'</title>')) return false;
+				if (!strpos($pageContent,'<title>'.$link['title'].'</title>')) {
+					echo '!Title ';
+					return false;
+				}
 			}
 			// Description
 			if (array_key_exists('description',$link) && !empty($link['description'])) {
-				if (!strpos($pageContent,'<meta name="description" content="'.$link['description'].'"')) return false;
+				if (!strpos($pageContent,'<meta name="description" content="'.$link['description'].'"')) {
+					echo '!Description ';
+					return false;
+				}
 			}
 			// Keywords
 			if (array_key_exists('keywords',$link) && !empty($link['keywords'])) {
-				if (!strpos($pageContent,'<meta name="keywords" content="'.$link['keywords'].'"')) return false;
+				if (!strpos($pageContent,'<meta name="keywords" content="'.$link['keywords'].'"')) {
+					echo '!Keywords ';
+					return false;
+				}
 			}
+			echo 'MetaOK ';
 		}
 		if (array_key_exists('module_headers_enabled',$config) && $config['module_headers_enabled']) {
 			// H1
 			if (array_key_exists('h1',$link) && !empty($link['h1'])) {
 				preg_match('/<h1[^>]*>(.*)<\/h1>/U',$pageContent,$matches);
-				if (!array_key_exists(1,$matches) || $matches[1]!=$link['h1']) return false;
+				if (!array_key_exists(1,$matches) || $matches[1]!=$link['h1']) {
+					echo '!H1 ';
+					return false;
+				}
 			}
+			echo 'H1OK ';
 		}
 		// additionalTags (только начинающиеся с 't_')
 		if(array_key_exists('module_label_replacement',$config) && $config['module_label_replacement']) {
@@ -113,12 +128,21 @@ function test_index() {
 					$tagValue = trim(getSpecialProperty($link['url'],$additionalTag));
 					if (empty($tagValue)) continue;
 					if (strtolower($e)!='utf-8') $tagValue = mb_convert_encoding($tagValue,$e,'utf-8');
-					if (!strpos($pageContent,$tagValue)) return false;
+					if (!strpos($pageContent,$tagValue)) {
+						echo '!AddTags ';
+						return false;
+					}
 				}
 			}
+			echo 'AddTagsOK ';
 		}
 	}
 	return true;
+}
+
+// Проверка БД
+function test_db() {
+	return _s_DBtest(false);
 }
 
 // Проверка модуля Redirects 301 (также используется в проверке основного модуля)

@@ -3,7 +3,7 @@ module.controller('InformationSystemsController', function ($scope, $http, $loca
    $scope.urls = [];
 
    $scope.$watch('editItem.title', function (newTitle){
-      $scope.editItem.url = $filter('translit')(newTitle);
+      if (newTitle) $scope.editItem.url = $filter('translit')(newTitle);
    });
 
    $http.get('actions.php?module=information_systems&action=get&id=' + getCurrentId()).success(function (data){

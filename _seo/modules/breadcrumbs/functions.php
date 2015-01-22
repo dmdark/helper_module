@@ -2,6 +2,7 @@
 // Формирование хлебных крошек
 // Используется в _seo/index.php
 // Зависит от _seo/index.php getCurrentUrl()
+// Зависит от _seo/functions.php _s_StorageType(), _s_DBmanageData()
 
 function _s_makeCrumbs() {
 	// Параметры
@@ -10,7 +11,12 @@ function _s_makeCrumbs() {
 	// Текщий URL
 	$url = trim(getCurrentUrl());
 	// Массив введенных в админке значений в 2м массив
-	$breadcrumbRelations = file_get_contents(dirname(__FILE__).'/breadcrumbs.json');
+	if (_s_StorageType() == 'mysql') {
+		$breadcrumbRelations = _s_DBmanageData('get','breadcrumbs');
+		if (!$breadcrumbRelations) $breadcrumbRelations = '[]';
+	} else {
+		$breadcrumbRelations = file_get_contents(dirname(__FILE__).'/breadcrumbs.json');
+	}
 	$breadcrumbRelations = json_decode($breadcrumbRelations, true);
 	$breadcrumbRelations = _s_CrumbsGetRelations($breadcrumbRelations,'');
 	// Начальные значения
