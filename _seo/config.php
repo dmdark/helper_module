@@ -11,7 +11,7 @@ $config = array(
 						'user' => 'root',
 						'password' => '',
 						'db_name' => 'seo_test',
-						'prefix' => '_seo_',
+						'prefix' => '_seom_',
 				),
 		),
 
