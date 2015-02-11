@@ -335,7 +335,9 @@ function _s_getInformationSystem($id)
 			$urls[] = json_decode($url['data']);
 		}
 	} else {
-		if($handle = opendir(_SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR)){
+		$dbDir = _SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR;
+		if (!is_dir($dbDir)) mkdir($dbDir);
+		if($handle = opendir($dbDir)){
 			while(false !== ($dir = readdir($handle))){
 				if($dir != "." && $dir != ".."){
 					$jsonFile = _SEO_DIRECTORY . 'db' . DIRECTORY_SEPARATOR . $dir . DIRECTORY_SEPARATOR . 'is_' . $id . '.json';
