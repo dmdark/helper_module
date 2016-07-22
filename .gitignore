@@ -1,5 +1,4 @@
 *
 !_seo
 !/_seo/**/*
-/.idea
-!/.gitignore
+!.gitignore

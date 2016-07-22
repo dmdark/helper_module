@@ -241,10 +241,10 @@ function applyMeta() {
 		$add_regexp = 'u';
 	}
 	if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
-		$headStart = mb_strpos($GLOBALS['_seo_content'], '<head', null, $e);
-		$headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>', null, $e);
+		$headStart = mb_strpos($GLOBALS['_seo_content'], '<head', 0, $e);
+		$headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>', 0, $e);
 		$headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart, $e);
-		$closeHeader = mb_strpos($headHtml, '>', null, $e);
+		$closeHeader = mb_strpos($headHtml, '>', 0, $e);
 		$headHtml = mb_substr($headHtml, $closeHeader + 1, null, $e);
 
 		if(!empty($pageInfo['title'])){
@@ -264,20 +264,18 @@ function applyMeta() {
 				$headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
 			}
 		}
-		/*$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader) . $headHtml . (mb_substr($GLOBALS['_seo_content'], $headEnd + 7));*/
-		// $GLOBALS['_seo_content'] = substr($GLOBALS['_seo_content'], 0, $headStart + $closeHeader + 1) . $headHtml . (substr($GLOBALS['_seo_content'], $headEnd));
-		$GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%simx' . $add_regexp, '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content']);
+		$GLOBALS['_seo_content'] = preg_replace('%<head(.+?)</head>%simx' . $add_regexp, '<head>' . $headHtml . '</head>', $GLOBALS['_seo_content'], 1);
 	}
 }
 
 function applyHeaders() {
 	$pageInfo = getCurrentPageInfo();
-	$e = $GLOBALS['_seo_config']['encoding'];
 	if(!empty($pageInfo['h1']) && function_exists('mb_strpos')) {
-		$h1Start = mb_strpos($GLOBALS['_seo_content'], '<h1', null, $e);
-		$h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>', null, $e);
+		$e = $GLOBALS['_seo_config']['encoding'];
+		$h1Start = mb_strpos($GLOBALS['_seo_content'], '<h1', 0, $e);
+		$h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>', 0, $e);
 		$h1Html = mb_substr($GLOBALS['_seo_content'], $h1Start, $h1End - $h1Start + mb_strlen('</h1>', $e), $e);
-		$h1StartTagEnd = mb_strpos($h1Html, '>', null, $e);
+		$h1StartTagEnd = mb_strpos($h1Html, '>', 0, $e);
 		$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1, $e) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End, null, $e);
 	}
 }
@@ -324,8 +322,8 @@ function applyLabelReplacement()
          $posEnd += mb_strlen($endKey, $e);
 
          if(!empty($posStart)){
-				if (strtolower($e)!='utf-8') $value = mb_convert_encoding($value,$e,'utf-8');
-            $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, 99999999, $e);
+			if (strtolower($e)!='utf-8') $value = mb_convert_encoding($value,$e,'utf-8');
+            $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, null, $e);
          }
       }
    }

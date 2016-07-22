@@ -490,10 +490,33 @@ function _s_render($file, $data)
 function _s_DBconnect() {
 	if (_s_StorageType() != 'mysql') return false;
 	$dbConfig = $GLOBALS['_seo_config']['dataInfo']['mysql_config'];
-	$connect = @mysql_connect($dbConfig['host'], $dbConfig['user'], $dbConfig['password']);
-	if (!$connect) die('MySQL connection error');
-	mysql_select_db($dbConfig['db_name']);
-	return $connect;
+	if (!array_key_exists('_seo_db_data', $GLOBALS)) {
+		$GLOBALS['_seo_db_data'] = array();
+	}
+	if (!array_key_exists('connect', $GLOBALS['_seo_db_data'])) {
+		$GLOBALS['_seo_db_data']['connection'] = false;
+	}
+	if (!array_key_exists('is_mysql_i', $GLOBALS['_seo_db_data'])) {
+		$GLOBALS['_seo_db_data']['is_mysql_i'] = function_exists('mysqli_connect');
+	}
+	if ($GLOBALS['_seo_db_data']['connection']) return $GLOBALS['_seo_db_data']['connection'];
+	$connected = false;
+	if ($GLOBALS['_seo_db_data']['is_mysql_i']) {
+		$connection = mysqli_connect($dbConfig['host'], $dbConfig['user'], $dbConfig['password'], $dbConfig['db_name']);
+		if ($connection && !mysqli_connect_error()) {
+			$connected = true;
+			mysqli_set_charset($connection, $GLOBALS['_seo_config']['encoding']);
+		}
+	} else {
+		$connection = @mysql_connect($dbConfig['host'], $dbConfig['user'], $dbConfig['password']);
+		if ($connection) {
+			$connected = true;
+			mysql_select_db($dbConfig['db_name']);
+		}
+	}
+	$GLOBALS['_seo_db_data']['connection'] = $connection;
+	if (!$connected) die('MySQL connection error');
+	return $connection;
 }
 function _s_DBtest($tableName) {
 	if (
@@ -511,20 +534,37 @@ function _s_DBtest($tableName) {
 	if (!$tableName || !$result) $result = _s_DBcreateTables($tableName);
 	return $result? true : false;
 }
-function _s_DBquery($query,$rows = false) {
-	$connect = _s_DBconnect();
-	$result = mysql_query($query,$connect);
-	if (!is_resource($result)) return $result;
-	if ($rows) {
+function _s_DBquery($query, $returnRows = false) {
+	$connection = _s_DBconnect();
+	$mysql_i_support = $GLOBALS['_seo_db_data']['is_mysql_i'];
+	if ($mysql_i_support) {
+		$result = mysqli_query($connection, $query);
+		if (!is_object($result)) return $result;
+	} else {
+		$result = mysql_query($query,$connection);
+		if (!is_resource($result)) return $result;
+	}
+	if ($returnRows) {
 		$output = array();
-		if (mysql_num_rows($result) != 0 ) {
-			while ($row = mysql_fetch_assoc($result)) {
-				$output[] = $row;
+		if ($mysql_i_support) {
+			if (mysqli_num_rows($result) != 0) {
+				while ($row = mysqli_fetch_assoc($result)) {
+					$output[] = $row;
+				}
+			}
+		} else {
+			if (mysql_num_rows($result) != 0 ) {
+				while ($row = mysql_fetch_assoc($result)) {
+					$output[] = $row;
+				}
 			}
 		}
 		return $output;
 	}
-	return mysql_fetch_array($result,MYSQL_NUM);
+	if ($mysql_i_support) {
+		return mysqli_fetch_array($result, MYSQLI_NUM);
+	}
+	return mysql_fetch_array($result, MYSQL_NUM);
 }
 function _s_DBcreateTables($tableName=false,$tables=false)
 {
@@ -581,6 +621,13 @@ function _s_DBcreateTables($tableName=false,$tables=false)
 		return _s_DBquery($dbQuery);
 	}
 }
+function _s_SqlEscapeData($str)
+{
+	$mysql_i_support = @$GLOBALS['_seo_db_data']['is_mysql_i'];
+	$connection = @$GLOBALS['_seo_db_data']['connection'];
+	if (!$connection) return $str;
+	return $mysql_i_support? mysqli_real_escape_string($connection, $str) : mysql_real_escape_string($str);
+}
 // Работа с полями в таблице bigdata
 function _s_DBmanageData($action,$field,$data=false)
 {
@@ -590,8 +637,8 @@ function _s_DBmanageData($action,$field,$data=false)
 		$query = 'SELECT * FROM `'.$dataTable.'` WHERE `module`=\''.$field.'\'';
 		$result = _s_DBquery($query);
 		if (empty($result)) {
-			$query = 'INSERT INTO `'.$dataTable.'`(`module`,`data`) VALUES (\''.$field.'\',\''.mysql_real_escape_string($data).'\')';
-		} else $query = 'UPDATE `'.$dataTable.'` SET `data`=\''.mysql_real_escape_string($data).'\' WHERE `module`=\''.$field.'\'';
+			$query = 'INSERT INTO `'.$dataTable.'`(`module`,`data`) VALUES (\''.$field.'\',\''._s_SqlEscapeData($data).'\')';
+		} else $query = 'UPDATE `'.$dataTable.'` SET `data`=\''._s_SqlEscapeData($data).'\' WHERE `module`=\''.$field.'\'';
 		$result = _s_DBquery($query);
 		return $result;
 	}
@@ -611,9 +658,9 @@ function _s_DBmanageRemembercache($action,$url=false,$data=false)
 		$query = 'SELECT * FROM `'.$dataTable.'` WHERE `url`=\''.$url.'\'';
 		$result = _s_DBquery($query);
 		if (empty($result)) {
-			$query = 'INSERT INTO `'.$dataTable.'`(`url`,`data`) VALUES (\''.$url.'\',\''.mysql_real_escape_string($data).'\')';
+			$query = 'INSERT INTO `'.$dataTable.'`(`url`,`data`) VALUES (\''.$url.'\',\''._s_SqlEscapeData($data).'\')';
 		} else {
-			$query = 'UPDATE `' . $dataTable . '` SET `data`=\'' . mysql_real_escape_string($data) . '\' WHERE `url`=\'' . $url . '\'';
+			$query = 'UPDATE `' . $dataTable . '` SET `data`=\'' . _s_SqlEscapeData($data) . '\' WHERE `url`=\'' . $url . '\'';
 		}
 		$result = _s_DBquery($query);
 		return $result;
@@ -651,8 +698,8 @@ function _s_DBmanageSpecial($action,$param,$url=false,$data=false) {
 		$query = 'SELECT * FROM `'.$dataTable.'` WHERE `param`=\''.$param.'\' AND `url`=\''.$url.'\'';
 		$result = _s_DBquery($query);
 		if (empty($result)) {
-			$query = 'INSERT INTO `'.$dataTable.'`(`param`,`url`,`data`) VALUES (\''.$param.'\',\''.$url.'\',\''.mysql_real_escape_string($data).'\')';
-		} else $query = 'UPDATE `'.$dataTable.'` SET `data`=\''.mysql_real_escape_string($data).'\' WHERE `param`=\''.$param.'\' AND `url`=\''.$url.'\'';
+			$query = 'INSERT INTO `'.$dataTable.'`(`param`,`url`,`data`) VALUES (\''.$param.'\',\''.$url.'\',\''._s_SqlEscapeData($data).'\')';
+		} else $query = 'UPDATE `'.$dataTable.'` SET `data`=\''._s_SqlEscapeData($data).'\' WHERE `param`=\''.$param.'\' AND `url`=\''.$url.'\'';
 		$result = _s_DBquery($query);
 		return $result;
 	}
