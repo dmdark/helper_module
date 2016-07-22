@@ -53,7 +53,7 @@ if($_GET['module'] == 'error404'){
 
 if($_GET['action'] == 'get_items'){
 	$config = config2file(_SEO_DIRECTORY . 'config.ini', false);
-	$rememberCache = getRememberCache();
+	$rememberCache = (_s_StorageType() == 'mysql')? getRememberCacheLines() : getRememberCache();
 	foreach($config as $key=>$info){
 		if(array_key_exists('newUrl',$info) && isset($rememberCache[$info['newUrl']])){
 			$info['rememberCache'] = nl2br(print_r($rememberCache[$info['newUrl']], true));

@@ -39,10 +39,11 @@ if(!function_exists('php2js')) {
 }
 if(!function_exists('json_decode')){
 	require_once _SEO_DIRECTORY . '/libs/JSON/JSON.php';
-	function json_decode($arg) {
+	function json_decode($arg, $assoc = false) {
 		global $_s_services_json;
 		if(!isset($_s_services_json)){
-			$_s_services_json = new Services_JSON(3);
+			$assoc = $assoc? 16 : 3;
+			$_s_services_json = new Services_JSON($assoc);
 		}
 		return $_s_services_json->decode($arg);
 	}
@@ -170,6 +171,22 @@ function getRememberCache()
 	}
 	return json_decode($content, true);
 }
+function getRememberCacheLine($url)
+{
+	$content = false;
+	if (_s_StorageType() == 'mysql') {
+		$content = _s_DBmanageRemembercache('get', $url);
+	}
+	return json_decode($content, true);
+}
+function getRememberCacheLines()
+{
+	$content = false;
+	if (_s_StorageType() == 'mysql') {
+		$content = _s_DBmanageRemembercache('getAll');
+	}
+	return $content;
+}
 function writeRememberCache($cache)
 {
 	$content = php2js($cache);
@@ -179,6 +196,14 @@ function writeRememberCache($cache)
 		file_put_contents(dirname(__FILE__) . '/admin/remember_cache.txt', $content);
 	}
 }
+function writeRememberCacheLine($url, $data)
+{
+	$content = php2js($data);
+	if (_s_StorageType() == 'mysql') {
+		_s_DBmanageRemembercache('save', $url, $content);
+	}
+}
+
 
 // database for special items
 function getDatabaseDirectoryForUrl($url) {
@@ -501,7 +526,8 @@ function _s_DBquery($query,$rows = false) {
 	}
 	return mysql_fetch_array($result,MYSQL_NUM);
 }
-function _s_DBcreateTables($tableName=false,$tables=false) {
+function _s_DBcreateTables($tableName=false,$tables=false)
+{
 	$dbConfig = $GLOBALS['_seo_config']['dataInfo']['mysql_config'];
 	if (!array_key_exists('prefix',$dbConfig)) return false;
 	if (!$tables) {
@@ -519,6 +545,10 @@ function _s_DBcreateTables($tableName=false,$tables=false) {
 			'bigdata' => array(
 				'module' => 'varchar(50)',
 				'data' => 'mediumtext',
+			),
+			'remembercache' => array(
+				'url' => 'varchar(255)',
+				'data' => 'text',
 			),
 		);
 	}
@@ -552,7 +582,8 @@ function _s_DBcreateTables($tableName=false,$tables=false) {
 	}
 }
 // Работа с полями в таблице bigdata
-function _s_DBmanageData($action,$field,$data=false) {
+function _s_DBmanageData($action,$field,$data=false)
+{
 	$dataTableName = 'bigdata';
 	$dataTable = $GLOBALS['_seo_config']['dataInfo']['mysql_config']['prefix'].$dataTableName;
 	if ($action == 'save' && is_string($field) && !empty($field) && is_string($data) && !empty($data)) {
@@ -568,6 +599,43 @@ function _s_DBmanageData($action,$field,$data=false) {
 		$query = 'SELECT `data` FROM `'.$dataTable.'` WHERE `module`=\''.$field.'\' LIMIT 1';
 		$result = _s_DBquery($query);
 		if (!empty($result) && is_array($result)) return $result[0];
+		return false;
+	}
+}
+// Работа с полями в таблице remembercache
+function _s_DBmanageRemembercache($action,$url=false,$data=false)
+{
+	$dataTableName = 'remembercache';
+	$dataTable = $GLOBALS['_seo_config']['dataInfo']['mysql_config']['prefix'].$dataTableName;
+	if ($action == 'save' && is_string($url) && !empty($url) && is_string($data) && !empty($data)) {
+		$query = 'SELECT * FROM `'.$dataTable.'` WHERE `url`=\''.$url.'\'';
+		$result = _s_DBquery($query);
+		if (empty($result)) {
+			$query = 'INSERT INTO `'.$dataTable.'`(`url`,`data`) VALUES (\''.$url.'\',\''.mysql_real_escape_string($data).'\')';
+		} else {
+			$query = 'UPDATE `' . $dataTable . '` SET `data`=\'' . mysql_real_escape_string($data) . '\' WHERE `url`=\'' . $url . '\'';
+		}
+		$result = _s_DBquery($query);
+		return $result;
+	}
+	if ($action == 'get' && is_string($url) && !empty($url)) {
+		$query = 'SELECT `data` FROM `'.$dataTable.'` WHERE `url`=\''.$url.'\' LIMIT 1';
+		$result = _s_DBquery($query);
+		if (!empty($result) && is_array($result)) return $result[0];
+		return false;
+	}
+	if ($action == 'getAll') {
+		$query = 'SELECT * FROM `'.$dataTable.'`';
+		$qresult = _s_DBquery($query, true);
+		if (!empty($qresult) && is_array($qresult) && count($qresult) > 0) {
+			$result = array();
+			foreach($qresult as $k=>$v){
+				if(is_array($v) && isset($v['url']) && isset($v['data'])) {
+					$result[$v['url']] = json_decode($v['data'], true);
+				}
+			}
+			if(is_array($result) && count($result) > 0){ return $result; }
+		}
 		return false;
 	}
 }

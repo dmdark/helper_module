@@ -9,34 +9,35 @@ header('Content-Type: text/html; charset=' . $GLOBALS['_seo_config']['encoding']
 if(array_key_exists('module_urls_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_urls_enabled']){
 
 	// проверяем, может нам пришел старый урл, который мы должны бы заменить. Редиректим!
-   $pageInfo = getCurrentPageInfo(false);
-   if(!empty($pageInfo['newUrl'])){
-
-      if(array_key_exists('rememberMode',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['rememberMode']){
-         $cache = getRememberCache();
-         $rememberCache = array();
-         $rememberCache['_GET'] = $_GET;
-
-         $the_server = array();
-         foreach($_SERVER as $key => $value){
-            if(strpos($key, 'HTTP_') === 0) continue;
-            if(strpos($key, 'SERVER_') === 0) continue;
-            if(strpos($key, 'REMOTE_') === 0) continue;
-            if(strpos($key, 'REDIRECT_') === 0) continue;
-            if(strpos($key, 'GATEWAY_') === 0) continue;
-            if($key == 'PATH') continue;
-            if($key == 'REQUEST_TIME') continue;
-            $the_server[$key] = $value;
-         }
-         $rememberCache['_SERVER'] = $the_server;
-
-         $cache[$pageInfo['newUrl']] = $rememberCache;
-         writeRememberCache($cache);
-      }
-
-      header('HTTP/1.1 301 Moved Permanently');
-      header('Location: http://' . $_SERVER['HTTP_HOST'] . $pageInfo['newUrl']);
-      exit;
+	$pageInfo = getCurrentPageInfo(false);
+	if(!empty($pageInfo['newUrl'])){
+		if(array_key_exists('rememberMode',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['rememberMode']){
+			$rememberCache = array();
+			$rememberCache['_GET'] = $_GET;
+			$the_server = array();
+			foreach($_SERVER as $key => $value){
+				if(strpos($key, 'HTTP_') === 0) continue;
+				if(strpos($key, 'SERVER_') === 0) continue;
+				if(strpos($key, 'REMOTE_') === 0) continue;
+				if(strpos($key, 'REDIRECT_') === 0) continue;
+				if(strpos($key, 'GATEWAY_') === 0) continue;
+				if($key == 'PATH') continue;
+				if($key == 'REQUEST_TIME') continue;
+				$the_server[$key] = $value;
+			}
+			$rememberCache['_SERVER'] = $the_server;
+			// my fix: mysql-cache
+			if (_s_StorageType() == 'mysql') {
+				writeRememberCacheLine($pageInfo['newUrl'], $rememberCache);
+			} else {
+				$cache = getRememberCache();
+				$cache[$pageInfo['newUrl']] = $rememberCache;
+				writeRememberCache($cache);
+			}
+		}
+		header('HTTP/1.1 301 Moved Permanently');
+		header('Location: http://' . $_SERVER['HTTP_HOST'] . $pageInfo['newUrl']);
+		exit;
    }
 
    // быть может модуль редиректов хочет вмешаться?
@@ -63,23 +64,35 @@ if(array_key_exists('module_urls_enabled',$GLOBALS['_seo_config']) && $GLOBALS['
    }
 
 	$pageInfo = getCurrentPageInfo(true, false);
-   if(!empty($pageInfo['newUrl'])){
-      header('HTTP/1.1 200 Ok');
-      $_SERVER['REQUEST_URI'] = $pageInfo['url'];
-      $_GET = getGETparamsFromUrl($pageInfo['url']);
-
-      $cache = getRememberCache();
-      if(isset($cache[$pageInfo['newUrl']])){
-         $rememberCache = $cache[$pageInfo['newUrl']];
-         foreach($rememberCache['_SERVER'] as $key => $value){
-            $_SERVER[$key] = $value;
-         }
-         foreach($rememberCache['_GET'] as $key => $value){
-            $_GET[$key] = $value;
-            $_REQUEST[$key] = $value;
-         }
-      }
-   }
+	if(!empty($pageInfo['newUrl'])){
+		header('HTTP/1.1 200 Ok');
+		$_SERVER['REQUEST_URI'] = $pageInfo['url'];
+		$_GET = getGETparamsFromUrl($pageInfo['url']);
+		if (_s_StorageType() == 'mysql') {
+			$rememberCache = getRememberCacheLine($pageInfo['newUrl']);
+			if(is_array($rememberCache) && count($rememberCache) > 0){
+				foreach($rememberCache['_SERVER'] as $key => $value){
+					$_SERVER[$key] = $value;
+				}
+				foreach($rememberCache['_GET'] as $key => $value){
+					$_GET[$key] = $value;
+					$_REQUEST[$key] = $value;
+				}
+			}
+		} else {
+			$cache = getRememberCache();
+			if(isset($cache[$pageInfo['newUrl']])){
+				$rememberCache = $cache[$pageInfo['newUrl']];
+				foreach($rememberCache['_SERVER'] as $key => $value){
+					$_SERVER[$key] = $value;
+				}
+				foreach($rememberCache['_GET'] as $key => $value){
+					$_GET[$key] = $value;
+					$_REQUEST[$key] = $value;
+				}
+			}
+		}
+	}
 
 }
 
@@ -92,11 +105,22 @@ function _seo_ob_callback($buffer)
 
 function _seo_apply()
 {
-   initConfig();
 
-   if(array_key_exists('encoding',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['encoding'] == 'utf-8'){
-      deleteNonUtfSymbols();
-   }
+	# Если URL - картинка, не обрабатываем
+	if (function_exists('headers_list')) {
+		$headersSentList = headers_list();
+		if (is_array($headersSentList)) {
+			foreach ($headersSentList as $k => $v) {
+				if (stripos($v, "Content-Type: ") === 0 && stripos($v, "Content-Type: text/") === false) return;
+			}
+		}
+	}
+
+	initConfig();
+
+	if(array_key_exists('encoding',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['encoding'] == 'utf-8'){
+		deleteNonUtfSymbols();
+	}
 
    if(array_key_exists('module_urls_enabled',$GLOBALS['_seo_config']) && $GLOBALS['_seo_config']['module_urls_enabled']){
       // делаем ЧПУ, заменяя ссылки
@@ -209,32 +233,33 @@ function getCurrentPageInfo($searchNewPage = true, $searchOldPage = true)
 
 function applyMeta() {
 	$pageInfo = getCurrentPageInfo();
-	// $GLOBALS['_seo_content'] .= '<pre>'.getCurrentUrl().print_r($pageInfo, true);
+
+	$e = $GLOBALS['_seo_config']['encoding'];
 
 	$add_regexp = '';
 	if($GLOBALS['_seo_config']['encoding'] == 'utf-8') {
 		$add_regexp = 'u';
 	}
 	if((!empty($pageInfo['description']) || !empty($pageInfo['title']) || !empty($pageInfo['keywords'])) && function_exists('mb_strpos')){
-		$headStart = mb_strpos($GLOBALS['_seo_content'], '<head');
-		$headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>');
-		$headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart);
-		$closeHeader = mb_strpos($headHtml, '>');
-		$headHtml = mb_substr($headHtml, $closeHeader + 1);
+		$headStart = mb_strpos($GLOBALS['_seo_content'], '<head', null, $e);
+		$headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>', null, $e);
+		$headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart, $e);
+		$closeHeader = mb_strpos($headHtml, '>', null, $e);
+		$headHtml = mb_substr($headHtml, $closeHeader + 1, null, $e);
 
 		if(!empty($pageInfo['title'])){
 			$headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
 		}
 		if(!empty($pageInfo['description'])) {
-			if(preg_match('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx', $headHtml)) {
-				$headHtml = preg_replace('/<meta[^>]+name="description"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
+			if (preg_match('/<meta[^>]+name=(["\'])description\1[^>]+content=(["\'])([^>]+)?\2/simx', $headHtml)) {
+				$headHtml = preg_replace('/<meta[^>]+name=(["\'])description\1[^>]+content=(["\'])([^>]+)?\2/simx' . $add_regexp, '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
 			} else {
 				$headHtml .= '<meta name="description" content="' . $pageInfo['description'] . '" />' . "\n";
 			}
 		}
 		if(!empty($pageInfo['keywords'])) {
-			if(preg_match('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx', $headHtml)){
-				$headHtml = preg_replace('/<meta[^>]+name="keywords"[^>]+content="([^>]+)?"/simx' . $add_regexp, '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
+			if (preg_match('/<meta[^>]+name=(["\'])keywords\1[^>]+content=(["\'])([^>]+)?\2/simx', $headHtml)) {
+				$headHtml = preg_replace('/<meta[^>]+name=(["\'])keywords\1[^>]+content=(["\'])([^>]+)?\2/simx' . $add_regexp, '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
 			} else{
 				$headHtml .= '<meta name="keywords" content="' . $pageInfo['keywords'] . '" />' . "\n";
 			}
@@ -247,12 +272,13 @@ function applyMeta() {
 
 function applyHeaders() {
 	$pageInfo = getCurrentPageInfo();
+	$e = $GLOBALS['_seo_config']['encoding'];
 	if(!empty($pageInfo['h1']) && function_exists('mb_strpos')) {
-		$h1Start = mb_strpos($GLOBALS['_seo_content'], '<h1');
-		$h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>');
-		$h1Html = mb_substr($GLOBALS['_seo_content'], $h1Start, $h1End - $h1Start + mb_strlen('</h1>'));
-		$h1StartTagEnd = mb_strpos($h1Html, '>');
-		$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End);
+		$h1Start = mb_strpos($GLOBALS['_seo_content'], '<h1', null, $e);
+		$h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>', null, $e);
+		$h1Html = mb_substr($GLOBALS['_seo_content'], $h1Start, $h1End - $h1Start + mb_strlen('</h1>', $e), $e);
+		$h1StartTagEnd = mb_strpos($h1Html, '>', null, $e);
+		$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1, $e) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End, null, $e);
 	}
 }
 
