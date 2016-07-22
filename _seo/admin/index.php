@@ -28,7 +28,7 @@ require_once _BLOCKS_DIRECTORY . 'header.php';
 		</div>
 
 		<div class="row row-item row-first-{{ $first }}" ng-class="" ng-repeat="item in items">
-			<div class="panel">
+			<div class="panel" id="url_number_{{ $index + 1 }}">
 				<div class="panel-heading">
 					{{ $index + 1 }}. <a target="_blank" name="{{ item.url }}" href="http://<?php echo $_SERVER['HTTP_HOST']; ?>{{ item.url }}">
 						http://<?php echo $_SERVER['HTTP_HOST']; ?><span>{{ item.url }}</span>
