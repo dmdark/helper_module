@@ -137,6 +137,7 @@ if (!strpos($_SERVER['REQUEST_URI'], 'admin') && !strpos($_SERVER['REQUEST_URI']
 1. Записываем новые настройки в файл и сохраняем их в ``config_new.ini``.
 2. Вызываем ``site-name.dom/_seo/modules/merge_configs.php``.
 3. Если настройки хранятся в БД, то изменения применены, удаляем ``config_new.ini``.
-4. Если настройки хранятся в файле, то убеждаемся, что скрипт отработал
-корректно, удаляем ``config.ini``, переименовываем ``config_new.ini``
-в ``config.ini``.
+4. Если настройки хранятся в файле, то убеждаемся, что скрипт
+отработал корректно, удаляем ``config.ini`` и ``config_new.ini``.
+Копируем ``modules/new_config.ini`` в ``config.ini``. Удаляем
+(необязательно) ``modules/new_config.ini``.
