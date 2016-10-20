@@ -20,8 +20,13 @@ if ($isMySqlStorage) {
 $new_config = array_replace_recursive($old_config, $upd_config);
 
 $new_config_items = array();
-foreach($new_config as $item) {
-	$new_config_items[] = item2config($item);	
+while($item = array_shift($new_config)) {
+	if(!empty($item['newUrl']) && !empty($new_config[$item['newUrl']])) {
+		unset($new_config[$item['newUrl']]['url']);
+		$item = array_merge($item, $new_config[$item['newUrl']]);
+		unset($new_config[$item['newUrl']]);
+	}
+	$new_config_items[] = item2config($item);
 }
 
 _s_saveConfig2file(__DIR__.'/new_config.ini', implode("===\n", $new_config_items));
