@@ -245,7 +245,8 @@ function applyMeta() {
 		$headEnd = mb_strpos($GLOBALS['_seo_content'], '</head>', 0, $e);
 		$headHtml = mb_substr($GLOBALS['_seo_content'], $headStart, $headEnd - $headStart, $e);
 		$closeHeader = mb_strpos($headHtml, '>', 0, $e);
-		$headHtml = mb_substr($headHtml, $closeHeader + 1, null, $e);
+		$headHtmlLength = mb_strlen($headHtml, $e);
+		$headHtml = mb_substr($headHtml, $closeHeader + 1, $headHtmlLength, $e);
 
 		if(!empty($pageInfo['title'])){
 			$headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
@@ -276,7 +277,8 @@ function applyHeaders() {
 		$h1End = mb_strpos($GLOBALS['_seo_content'], '</h1>', 0, $e);
 		$h1Html = mb_substr($GLOBALS['_seo_content'], $h1Start, $h1End - $h1Start + mb_strlen('</h1>', $e), $e);
 		$h1StartTagEnd = mb_strpos($h1Html, '>', 0, $e);
-		$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1, $e) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End, null, $e);
+		$seoContentLength = mb_strlen($GLOBALS['_seo_content'], $e);
+		$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $h1Start + $h1StartTagEnd + 1, $e) . $pageInfo['h1'] . mb_substr($GLOBALS['_seo_content'], $h1End, $seoContentLength, $e);
 	}
 }
 
@@ -298,35 +300,36 @@ function applyUrls()
 
 function applyLabelReplacement()
 {
-   $pageInfo = getCurrentPageInfo();
+	$pageInfo = getCurrentPageInfo();
 
-   $e = $GLOBALS['_seo_config']['encoding'];
+	$e = $GLOBALS['_seo_config']['encoding'];
 
-   $keys = $GLOBALS['_seo_config']['adminConfig']['additionalTags'];
+	$keys = $GLOBALS['_seo_config']['adminConfig']['additionalTags'];
 
-   foreach($keys as $key){
-      if(strpos($key, 't_') !== false){
-         $value = trim(getSpecialProperty($pageInfo['url'], $key));
-         if(empty($value)){
-            continue;
-         }
+	foreach($keys as $key){
+		if (strpos($key, 't_') !== false) {
+			$value = trim(getSpecialProperty($pageInfo['url'], $key));
+			if (empty($value)) {
+				continue;
+			}
 
-         $startKey = '<!--$$' . $key . '-->';
-         $endKey = '<!--/$$' . $key . '-->';
+			$startKey = '<!--$$' . $key . '-->';
+			$endKey = '<!--/$$' . $key . '-->';
 
-         $posStart = mb_strpos($GLOBALS['_seo_content'], $startKey, null, $e);
-         $posEnd = mb_strpos($GLOBALS['_seo_content'], $endKey, $posStart, $e);
-         if(empty($posEnd)){
-            $posEnd = $posStart;
-         }
-         $posEnd += mb_strlen($endKey, $e);
+			$posStart = mb_strpos($GLOBALS['_seo_content'], $startKey, null, $e);
+			$posEnd = mb_strpos($GLOBALS['_seo_content'], $endKey, $posStart, $e);
+			if (empty($posEnd)) {
+				$posEnd = $posStart;
+			}
+			$posEnd += mb_strlen($endKey, $e);
 
-         if(!empty($posStart)){
-			if (strtolower($e)!='utf-8') $value = mb_convert_encoding($value,$e,'utf-8');
-            $GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, null, $e);
-         }
-      }
-   }
+			if(!empty($posStart)){
+				if (strtolower($e)!='utf-8') $value = mb_convert_encoding($value,$e,'utf-8');
+				$seoContentLength = mb_strlen($GLOBALS['_seo_content'], $e);
+				$GLOBALS['_seo_content'] = mb_substr($GLOBALS['_seo_content'], 0, $posStart, $e) . $value . mb_substr($GLOBALS['_seo_content'], $posEnd, $seoContentLength, $e);
+			}
+		}
+	}
 }
 
 function applyInformationSystems()
