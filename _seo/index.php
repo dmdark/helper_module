@@ -252,6 +252,7 @@ function applyMeta() {
 			$headHtml = preg_replace('%<title>(.+?)</title>%simx', '<title>' . $pageInfo['title'] . '</title>', $headHtml);
 		}
 		if(!empty($pageInfo['description'])) {
+			$pageInfo['description'] = str_replace('"', "&quot;", $pageInfo['description']);
 			if (preg_match('/<meta[^>]+name=(["\'])description\1[^>]+content=(["\'])([^>]+)?\2/simx', $headHtml)) {
 				$headHtml = preg_replace('/<meta[^>]+name=(["\'])description\1[^>]+content=(["\'])([^>]+)?\2/simx' . $add_regexp, '<meta name="description" content="' . $pageInfo['description'] . '"', $headHtml);
 			} else {
@@ -259,6 +260,7 @@ function applyMeta() {
 			}
 		}
 		if(!empty($pageInfo['keywords'])) {
+			$pageInfo['keywords'] = str_replace('"', "&quot;", $pageInfo['keywords']);
 			if (preg_match('/<meta[^>]+name=(["\'])keywords\1[^>]+content=(["\'])([^>]+)?\2/simx', $headHtml)) {
 				$headHtml = preg_replace('/<meta[^>]+name=(["\'])keywords\1[^>]+content=(["\'])([^>]+)?\2/simx' . $add_regexp, '<meta name="keywords" content="' . $pageInfo['keywords'] . '"', $headHtml);
 			} else{
